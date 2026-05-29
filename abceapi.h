@@ -17,6 +17,8 @@ int abceapi_isarray(struct abce *abce, int stackidx);
 int abceapi_isstr(struct abce *abce, int stackidx);
 int abceapi_ispb(struct abce *abce, int stackidx);
 int abceapi_isscope(struct abce *abce, int stackidx);
+int abceapi_isflop(struct abce *abce, int stackidx);
+int abceapi_isint(struct abce *abce, int stackidx);
 int abceapi_isdbl(struct abce *abce, int stackidx);
 int abceapi_isbool(struct abce *abce, int stackidx);
 int abceapi_isfun(struct abce *abce, int stackidx);

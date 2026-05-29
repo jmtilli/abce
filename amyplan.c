@@ -125,7 +125,8 @@ int main(int argc, char **argv, char **envp)
     fprintf(stderr, "No return value from engine\n");
     return 254;
   }
-  if (amyplanyy.abce.stackbase[amyplanyy.abce.sp-1].typ != ABCE_T_D)
+  if (amyplanyy.abce.stackbase[amyplanyy.abce.sp-1].typ != ABCE_T_D &&
+      amyplanyy.abce.stackbase[amyplanyy.abce.sp-1].typ != ABCE_T_I)
   {
     fprintf(stderr, "Return value from engine not a number\n");
     return 253;

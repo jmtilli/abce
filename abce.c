@@ -1508,8 +1508,21 @@ int abce_json_encode_rec_cpush(struct abce *abce, const struct abce_mb *mb, stru
             abce_caj_out_put2_null(ctx, buf, sz);
             break;
           case ABCE_T_D:
-            abce_caj_out_put2_number(ctx, buf, sz, mbval->u.d);
+            abce_caj_out_put2_flop(ctx, buf, sz, mbval->u.d);
             break;
+          case ABCE_T_I:
+          {
+            int64_t i64 = abce_to_i64(mbval->u.d);
+            if ((double)i64 == mbval->u.d)
+            {
+              abce_caj_out_put2_i64(ctx, buf, sz, i64);
+            }
+            else
+            {
+              abce_caj_out_put2_flop(ctx, buf, sz, mbval->u.d);
+            }
+            break;
+          }
           case ABCE_T_B:
             if (mbval->u.d)
             {
@@ -1572,8 +1585,22 @@ int abce_json_encode_rec_cpush(struct abce *abce, const struct abce_mb *mb, stru
             abce_caj_out_add_null(ctx);
             break;
           case ABCE_T_D:
-            abce_caj_out_add_number(ctx, mb->u.area->u.ar.mbs[i].u.d);
+            abce_caj_out_add_flop(ctx, mb->u.area->u.ar.mbs[i].u.d);
             break;
+          case ABCE_T_I:
+          {
+            double d = mb->u.area->u.ar.mbs[i].u.d;
+            int64_t i64 = abce_to_i64(d);
+            if ((double)i64 == d)
+            {
+              abce_caj_out_add_i64(ctx, i64);
+            }
+            else
+            {
+              abce_caj_out_add_flop(ctx, d);
+            }
+            break;
+          }
           case ABCE_T_B:
             if (mb->u.area->u.ar.mbs[i].u.d)
             {
@@ -1626,8 +1653,21 @@ int abce_json_encode_rec_cpush(struct abce *abce, const struct abce_mb *mb, stru
       abce_caj_out_add2_string(ctx, abce_mba_str(mb->u.area), mb->u.area->u.str.size);
       break;
     case ABCE_T_D:
-      abce_caj_out_add_number(ctx, mb->u.d);
+      abce_caj_out_add_flop(ctx, mb->u.d);
       break;
+    case ABCE_T_I:
+    {
+      int64_t i64 = abce_to_i64(mb->u.d);
+      if ((double)i64 == mb->u.d)
+      {
+        abce_caj_out_add_i64(ctx, i64);
+      }
+      else
+      {
+        abce_caj_out_add_flop(ctx, mb->u.d);
+      }
+      break;
+    }
     case ABCE_T_B:
       if (mb->u.d)
       {

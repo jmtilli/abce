@@ -351,7 +351,7 @@ static inline int abce_getboolean(int *b, struct abce *abce, int64_t idx)
     return -EOVERFLOW;
   }
   mb = &abce->stackbase[addr];
-  if (abce_unlikely(mb->typ != ABCE_T_D && mb->typ != ABCE_T_B))
+  if (abce_unlikely(mb->typ != ABCE_T_D && mb->typ != ABCE_T_B && mb->typ != ABCE_T_I))
   {
     abce->err.code = ABCE_E_EXPECT_BOOL;
     abce_mb_errreplace_noinline(abce, mb);
@@ -531,7 +531,7 @@ static inline int abce_getdbl(double *d, struct abce *abce, int64_t idx)
   }
   //printf("addr %d\n", (int)addr);
   mb = &abce->stackbase[addr];
-  if (abce_unlikely(mb->typ != ABCE_T_D && mb->typ != ABCE_T_B))
+  if (abce_unlikely(mb->typ != ABCE_T_D && mb->typ != ABCE_T_B && mb->typ != ABCE_T_I))
   {
     abce->err.code = ABCE_E_EXPECT_DBL;
     abce_mb_errreplace_noinline(abce, mb);
@@ -787,6 +787,19 @@ static inline int abce_cpush_double(struct abce *abce, double d)
   abce->csp++;
   return 0;
 }
+static inline int abce_cpush_int(struct abce *abce, double d)
+{
+  if (abce_unlikely(abce->csp >= abce->cstacklimit))
+  {
+    abce->err.code = ABCE_E_STACK_OVERFLOW;
+    abce->err.mb.typ = ABCE_T_N;
+    return -EOVERFLOW;
+  }
+  abce->cstackbase[abce->csp].typ = abce_is_int(d) ? ABCE_T_I : ABCE_T_D;
+  abce->cstackbase[abce->csp].u.d = d;
+  abce->csp++;
+  return 0;
+}
 static inline int abce_cpush_mb(struct abce *abce, const struct abce_mb *mb)
 {
   if (abce_unlikely(abce->csp >= abce->cstacklimit))
@@ -942,6 +955,24 @@ static inline int abce_push_double(struct abce *abce, double dbl)
     return -EOVERFLOW;
   }
   abce->stackbase[abce->sp].typ = ABCE_T_D;
+  abce->stackbase[abce->sp].u.d = dbl;
+  abce->sp++;
+  return 0;
+}
+static inline int abce_push_int(struct abce *abce, double dbl)
+{
+  if (abce_unlikely(abce->sp >= abce->stacklimit))
+  {
+    abce_double_stack(abce);
+  }
+  if (abce_unlikely(abce->sp >= abce->stacklimit))
+  {
+    abce->err.code = ABCE_E_STACK_OVERFLOW;
+    abce->err.mb.typ = abce_is_int(dbl) ? ABCE_T_I : ABCE_T_D;
+    abce->err.mb.u.d = dbl;
+    return -EOVERFLOW;
+  }
+  abce->stackbase[abce->sp].typ = abce_is_int(dbl) ? ABCE_T_I : ABCE_T_D;
   abce->stackbase[abce->sp].u.d = dbl;
   abce->sp++;
   return 0;

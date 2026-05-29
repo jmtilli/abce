@@ -11,6 +11,7 @@
 #include "abcetrees.h"
 #include "abcejmalloc.h"
 #include "abcescopes.h"
+#include "abceprettyftoa.h"
 
 void *abce_jm_alloc(void *old, size_t oldsz, size_t newsz, void **pbaton)
 {
@@ -302,6 +303,19 @@ void mb_to_lua(lua_State *lua, const struct abce_mb *mb)
     case ABCE_T_D:
       lua_pushnumber(lua, mb->u.d);
       return;
+    case ABCE_T_I:
+    {
+      long long ll = abce_to_ll(mb->u.d);
+      if ((double)(lua_Integer)ll == mb->u.d)
+      {
+        lua_pushinteger(lua, (lua_Integer)ll);
+      }
+      else
+      {
+        lua_pushnumber(lua, mb->u.d);
+      }
+      return;
+    }
     case ABCE_T_S:
       lua_pushlstring(lua, abce_mba_str(mb->u.area), mb->u.area->u.str.size);
       return;
@@ -348,10 +362,27 @@ void mb_from_lua(lua_State *lua, struct abce *abce, int idx)
       }
       return;
     case LUA_TNUMBER:
+#if LUA_VERSION_NUM >= 503
+      if (lua_isinteger(lua, idx))
+      {
+        if (abce_push_int(abce, lua_tonumber(lua, idx)) != 0)
+        {
+          abort();
+        }
+      }
+      else
+      {
+        if (abce_push_double(abce, lua_tonumber(lua, idx)) != 0)
+        {
+          abort();
+        }
+      }
+#else
       if (abce_push_double(abce, lua_tonumber(lua, idx)) != 0)
       {
         abort();
       }
+#endif
       return;
     case LUA_TSTRING:
       str = lua_tolstring(lua, idx, &len);
@@ -1235,8 +1266,32 @@ void abce_mb_dump_impl(const struct abce_mb *mb, struct abce_dump_list *ll)
       printf("null");
       break;
     case ABCE_T_D:
-      printf("%.20g", mb->u.d);
+    {
+      char buf[25];
+      abce_pretty_ftoa(buf, sizeof(buf), mb->u.d, 6);
+      printf("%s", buf);
       break;
+    }
+    case ABCE_T_I:
+    {
+      long long ll = abce_to_ll(mb->u.d);
+      unsigned long long ull = abce_to_ull(mb->u.d);
+      if ((double)ll == mb->u.d)
+      {
+        printf("%lld", ll);
+      }
+      else if ((double)ull == mb->u.d)
+      {
+        printf("%llu", ull);
+      }
+      else
+      {
+        char buf[25];
+        abce_pretty_ftoa(buf, sizeof(buf), mb->u.d, 6);
+        printf("%s", buf);
+      }
+      break;
+    }
     case ABCE_T_B:
       printf("%s", mb->u.d ? "true" : "false");
       break;

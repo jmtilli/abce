@@ -83,13 +83,25 @@ int abceapi_isscope(struct abce *abce, int stackidx)
   abce->err = err_old;
   return res;
 }
-int abceapi_isdbl(struct abce *abce, int stackidx)
+int abceapi_isflop(struct abce *abce, int stackidx)
 {
   int res;
   struct abce_err err_old = abce->err;
   res = abce_verifymb(abce, stackidx, ABCE_T_D) == 0;
   abce->err = err_old;
   return res;
+}
+int abceapi_isint(struct abce *abce, int stackidx)
+{
+  int res;
+  struct abce_err err_old = abce->err;
+  res = abce_verifymb(abce, stackidx, ABCE_T_I) == 0;
+  abce->err = err_old;
+  return res;
+}
+int abceapi_isdbl(struct abce *abce, int stackidx)
+{
+  return abceapi_isflop(abce, stackidx) || abceapi_isint(abce, stackidx);
 }
 int abceapi_isbool(struct abce *abce, int stackidx)
 {

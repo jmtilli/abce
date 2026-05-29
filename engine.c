@@ -19,6 +19,7 @@
 #include "abcescopes.h"
 #include "abceworditer.h"
 #include "abce_caj.h"
+#include "abceprettyftoa.h"
 
 #define POPABORTS 1
 
@@ -79,6 +80,31 @@ static inline void abce_npoppushnil(struct abce *abce, size_t n)
 	nn.typ = ABCE_T_N;
 	nn.u.d = 0;
 	ret = abce_mb_stackreplace(abce, -(int64_t)n, &nn);
+#if POPABORTS
+	if (ret != 0)
+	{
+		abort();
+	}
+#endif
+	for (i = 1; i < n; i++)
+	{
+		ret = abce_pop(abce);
+#if POPABORTS
+		if (ret != 0)
+		{
+			abort();
+		}
+#endif
+	}
+}
+static inline void abce_npoppushint(struct abce *abce, size_t n, double d)
+{
+	int ret;
+	struct abce_mb dd;
+	size_t i;
+	dd.typ = abce_is_int(d) ? ABCE_T_I : ABCE_T_D;
+	dd.u.d = d;
+	ret = abce_mb_stackreplace(abce, -(int64_t)n, &dd);
 #if POPABORTS
 	if (ret != 0)
 	{
@@ -232,7 +258,7 @@ static int set_int_cfield(struct abce *abce, struct abce_mb *mbt, const char *fn
     abce_cpop(abce);
     return -ENOENT;
   }
-  if (mbres->typ != ABCE_T_D)
+  if (mbres->typ != ABCE_T_D && mbres->typ != ABCE_T_I)
   {
     abce->err.code = ABCE_E_EXPECT_DBL;
     abce_mb_errreplace_noinline(abce, mbres);
@@ -255,7 +281,7 @@ static int set_field(struct abce *abce, struct abce_mb *mbt, const char *fname, 
     abce->err.mb.typ = ABCE_T_N;
     return -ENOMEM;
   }
-  mbval.typ = ABCE_T_D;
+  mbval.typ = abce_is_int(val) ? ABCE_T_I : ABCE_T_D;
   mbval.u.d = val;
   if (abce_tree_set_str(abce, mbt, mbkey, &mbval) != 0)
   {
@@ -274,6 +300,32 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
   int ret = 0;
   switch (ins)
   {
+    case ABCE_OPCODE_LOGICAL_OR:
+    {
+      int b1, b2;
+      GETBOOLEAN(&b2, -1);
+      GETBOOLEAN(&b1, -2);
+      POP();
+      POP();
+      if (abce_push_boolean(abce, !!(b1 || b2)) != 0)
+      {
+        abce_maybeabort();
+      }
+      return 0;
+    }
+    case ABCE_OPCODE_LOGICAL_AND:
+    {
+      int b1, b2;
+      GETBOOLEAN(&b2, -1);
+      GETBOOLEAN(&b1, -2);
+      POP();
+      POP();
+      if (abce_push_boolean(abce, !!(b1 && b2)) != 0)
+      {
+        abce_maybeabort();
+      }
+      return 0;
+    }
 #ifdef WITH_LUA
     case ABCE_OPCODE_LUACALL:
     {
@@ -392,9 +444,13 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
     case ABCE_OPCODE_ABS:
     {
       double dbl;
+      struct abce_mb *mbdbl;
+      int is_int;
+      GETMBPTR(&mbdbl, -1);
+      is_int = (mbdbl->typ == ABCE_T_I);
       GETDBL(&dbl, -1);
       POP();
-      if (abce_push_double(abce, fabs(dbl)) != 0)
+      if ((is_int ? abce_push_int(abce, fabs(dbl)) : abce_push_double(abce, fabs(dbl))) != 0)
       {
         abce_maybeabort();
       }
@@ -405,7 +461,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       double dbl;
       GETDBL(&dbl, -1);
       POP();
-      if (abce_push_double(abce, trunc(dbl)) != 0)
+      if (abce_push_int(abce, trunc(dbl)) != 0)
       {
         abce_maybeabort();
       }
@@ -416,7 +472,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       double dbl;
       GETDBL(&dbl, -1);
       POP();
-      if (abce_push_double(abce, round(dbl)) != 0)
+      if (abce_push_int(abce, round(dbl)) != 0)
       {
         abce_maybeabort();
       }
@@ -486,7 +542,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       double dbl;
       GETDBL(&dbl, -1);
       POP();
-      if (abce_push_double(abce, floor(dbl)) != 0)
+      if (abce_push_int(abce, floor(dbl)) != 0)
       {
         abce_maybeabort();
       }
@@ -497,7 +553,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       double dbl;
       GETDBL(&dbl, -1);
       POP();
-      if (abce_push_double(abce, ceil(dbl)) != 0)
+      if (abce_push_int(abce, ceil(dbl)) != 0)
       {
         abce_maybeabort();
       }
@@ -721,7 +777,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       VERIFYMB(-2, ABCE_T_S);
       GETMBSTRPTR(&mb2, -1);
       GETMBSTRPTR(&mb1, -2);
-      abce_npoppushdbl(abce, 2, abce_str_cmp_sym_mb(mb1, mb2));
+      abce_npoppushint(abce, 2, abce_str_cmp_sym_mb(mb1, mb2));
       return 0;
     }
     case ABCE_OPCODE_STR_LOWER:
@@ -821,7 +877,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       GETMBPTR(&mbbasemaybenil, -2);
       if (mbbasemaybenil->typ == ABCE_T_N)
       {
-        abce_npoppushdbl(abce, 2, 0);
+        abce_npoppushint(abce, 2, 0);
         return 0;
       }
       VERIFYMB(-2, ABCE_T_S);
@@ -834,7 +890,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         i++;
         abce_word_iter_next(&it);
       }
-      abce_npoppushdbl(abce, 2, i);
+      abce_npoppushint(abce, 2, i);
       return 0;
     }
     case ABCE_OPCODE_STRWORDLIST:
@@ -1017,9 +1073,9 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       struct abce_mb *res, *mbbase;
       double cnt;
 
-      VERIFYMB(-1, ABCE_T_D);
-      VERIFYMB(-2, ABCE_T_S);
+      //VERIFYMB(-1, ABCE_T_D); // commented out to allow ABCE_T_I too
       GETDBL(&cnt, -1);
+      VERIFYMB(-2, ABCE_T_S);
       if ((double)abce_to_size(cnt) != cnt)
       {
         abce->err.code = ABCE_E_REPCNT_NOT_UINT;
@@ -1058,7 +1114,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       }
       else
       {
-        abce_npoppushdbl(abce, 2, pos - abce_mba_str(mbhaystack->u.area));
+        abce_npoppushint(abce, 2, pos - abce_mba_str(mbhaystack->u.area));
       }
       return 0;
     }
@@ -1112,10 +1168,35 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
     {
       char buf[64] = {0};
       double dbl;
+      struct abce_mb *mbdbl;
+      int is_int;
+      long long ll = 0;
+      unsigned long long ull = 0;
+      GETMBPTR(&mbdbl, -1);
+      is_int = (mbdbl->typ == ABCE_T_I);
       GETDBL(&dbl, -1);
-      if (snprintf(buf, sizeof(buf), "%g", dbl) >= (int)sizeof(buf))
+      if (is_int)
       {
-        abort();
+        ll = abce_to_ll(dbl);
+        ull = abce_to_ull(dbl);
+      }
+      if (is_int && (double)ll == dbl)
+      {
+        if (snprintf(buf, sizeof(buf), "%lld", ll) >= (int)sizeof(buf))
+        {
+          abort();
+        }
+      }
+      else if (is_int && (double)ull == dbl)
+      {
+        if (snprintf(buf, sizeof(buf), "%llu", ull) >= (int)sizeof(buf))
+        {
+          abort();
+        }
+      }
+      else
+      {
+        abce_pretty_ftoa(buf, sizeof(buf), dbl, 6);
       }
       if (abce_mb_cpush_create_string(abce, buf, strlen(buf)) == NULL)
       {
@@ -1131,6 +1212,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       struct abce_mb *str;
       char *endptr;
       double dbl;
+      int is_int;
       GETMBSTRPTR(&str, -1);
       if (   str->u.area->u.str.size == 0
           || str->u.area->u.str.size != strlen(abce_mba_str(str->u.area)))
@@ -1139,6 +1221,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         abce_mb_errreplace_noinline(abce, str);
         return -EINVAL;
       }
+      is_int = !(strchr(abce_mba_str(str->u.area), '.') || strchr(abce_mba_str(str->u.area), 'e') || strchr(abce_mba_str(str->u.area), 'E'));
       dbl = strtod(abce_mba_str(str->u.area), &endptr);
       if (*endptr != '\0')
       {
@@ -1146,7 +1229,14 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         abce_mb_errreplace_noinline(abce, str);
         return -EINVAL;
       }
-      abce_npoppushdbl(abce, 1, dbl);
+      if (is_int)
+      {
+        abce_npoppushint(abce, 1, dbl);
+      }
+      else
+      {
+        abce_npoppushdbl(abce, 1, dbl);
+      }
       return 0;
     }
     case ABCE_OPCODE_STRSTRIP:
@@ -1201,7 +1291,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         return -ENOMEM;
       }
       locidx = mbscnew->u.area->u.sc.locidx;
-      abce_npoppushdbl(abce, 2, locidx);
+      abce_npoppushint(abce, 2, locidx);
       abce_cpop(abce);
       return 0;
     }
@@ -1718,7 +1808,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       {
         maxbytes = -1;
       }
-      else if (mbmaxbytes->typ == ABCE_T_D)
+      else if (mbmaxbytes->typ == ABCE_T_D || mbmaxbytes->typ == ABCE_T_I)
       {
         if ((double)abce_to_size(mbmaxbytes->u.d) != mbmaxbytes->u.d)
         {
@@ -1781,7 +1871,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
           memcpy(&mbpb->u.area->u.pb.buf[(size_t)off], lineptr, bytes_read);
         }
         free(lineptr);
-        abce_npoppushdbl(abce, 5, bytes_read);
+        abce_npoppushint(abce, 5, bytes_read);
         break;
       }
       else
@@ -1830,7 +1920,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
           }
         }
       }
-      abce_npoppushdbl(abce, 5, bytes_read);
+      abce_npoppushint(abce, 5, bytes_read);
       break;
     }
     case ABCE_OPCODE_GETTIME:
@@ -1844,7 +1934,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       tv.tv_usec = 0;
 #endif
       time64 = ((int64_t)tv.tv_sec)*1000LL*1000LL + tv.tv_usec;
-      if (abce_push_double(abce, time64) != 0)
+      if (abce_push_int(abce, time64) != 0)
       {
         abce->err.code = ABCE_E_STACK_OVERFLOW;
         abce->err.mb.typ = ABCE_T_D;
@@ -1930,7 +2020,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         {
           return ret;
         }
-        abce_npoppushdbl(abce, 1, res*1000LL*1000LL + usec);
+        abce_npoppushint(abce, 1, res*1000LL*1000LL + usec);
       }
       break;
     }
@@ -2123,7 +2213,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         return -EINVAL;
       }
       bytes_read = fread(&mbpb->u.area->u.pb.buf[(size_t)off], 1, (size_t)nbytes, mbios->u.area->u.ios.f);
-      abce_npoppushdbl(abce, 4, bytes_read);
+      abce_npoppushint(abce, 4, bytes_read);
       break;
     }
     case ABCE_OPCODE_FILE_SEEK_TELL:
@@ -2168,7 +2258,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         return -EINVAL;
       }
       fseek(mbios->u.area->u.ios.f, abce_to_long(off), iwhence);
-      abce_npoppushdbl(abce, 3, ftell(mbios->u.area->u.ios.f));
+      abce_npoppushint(abce, 3, ftell(mbios->u.area->u.ios.f));
       break;
     }
     case ABCE_OPCODE_FILE_FLUSH:
@@ -2236,7 +2326,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
         return -EINVAL;
       }
       bytes_written = fwrite(&mbpb->u.area->u.pb.buf[(size_t)off], 1, (size_t)nbytes, mbios->u.area->u.ios.f);
-      abce_npoppushdbl(abce, 4, bytes_written);
+      abce_npoppushint(abce, 4, bytes_written);
       break;
     }
     case ABCE_OPCODE_LISTSPLICE:
@@ -2578,7 +2668,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
             // ev.u.num.d
             if (!pushed)
             {
-              if (abce_cpush_double(abce, ev.u.num.d) != 0)
+              if ((ev.u.num.is_integer ? abce_cpush_int(abce, ev.u.num.d) : abce_cpush_double(abce, ev.u.num.d)) != 0)
               {
                 abce_ncpop(abce, pushedc);
                 return -ENOMEM;
@@ -2588,7 +2678,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
             }
             else if (ev.key)
             {
-              if (abce_cpush_double(abce, ev.u.num.d) != 0)
+              if ((ev.u.num.is_integer ? abce_cpush_int(abce, ev.u.num.d) : abce_cpush_double(abce, ev.u.num.d)) != 0)
               {
                 abce_ncpop(abce, pushedc);
                 return -ENOMEM;
@@ -2610,7 +2700,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
             }
             else
             {
-              if (abce_cpush_double(abce, ev.u.num.d) != 0)
+              if ((ev.u.num.is_integer ? abce_cpush_int(abce, ev.u.num.d) : abce_cpush_double(abce, ev.u.num.d)) != 0)
               {
                 abce_ncpop(abce, pushedc);
                 return -ENOMEM;
@@ -2714,7 +2804,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
 	default:
 	  abort();
       }
-      abce_npoppushdbl(abce, 1, c);
+      abce_npoppushint(abce, 1, c);
       break;
     }
     case ABCE_OPCODE_STRFMT:
@@ -2876,7 +2966,22 @@ int abce_engine(struct abce *abce, unsigned char *addcode, size_t addsz)
       switch (ins)
       {
         case ABCE_OPCODE_NOP:
+	  break;
+        case ABCE_OPCODE_PUSH_INT:
+        {
+          double dbl;
+          if (abce_fetch_d(&dbl, abce, addcode, addsz) != 0)
+          {
+            ret = -EFAULT;
+            break;
+          }
+          if (abce_push_int(abce, dbl) != 0)
+          {
+            ret = -EFAULT;
+            break;
+          }
           break;
+        }
         case ABCE_OPCODE_PUSH_DBL:
         {
           double dbl;
@@ -3107,7 +3212,7 @@ calltrailer:
         {
           struct abce_mb *mbar;
           GETMBARPTR(&mbar, -1);
-          abce_npoppushdbl(abce, 1, mbar->u.area->u.ar.size);
+          abce_npoppushint(abce, 1, mbar->u.area->u.ar.size);
           break;
         }
         case ABCE_OPCODE_PBSETLEN:
@@ -3291,21 +3396,21 @@ outpbset:
             default:
               abort();
           }
-          abce_npoppushdbl(abce, 3, val);
+          abce_npoppushint(abce, 3, val);
           break;
         }
         case ABCE_OPCODE_PBLEN:
         {
           struct abce_mb *mbpb;
           GETMBPBPTR(&mbpb, -1);
-          abce_npoppushdbl(abce, 1, mbpb->u.area->u.pb.size);
+          abce_npoppushint(abce, 1, mbpb->u.area->u.pb.size);
           break;
         }
         case ABCE_OPCODE_STRLEN:
         {
           struct abce_mb *mbstr;
           GETMBSTRPTR(&mbstr, -1);
-          abce_npoppushdbl(abce, 1, mbstr->u.area->u.str.size);
+          abce_npoppushint(abce, 1, mbstr->u.area->u.str.size);
           break;
         }
         case ABCE_OPCODE_LISTSET:
@@ -3365,7 +3470,7 @@ outpbset:
             ret = -ERANGE;
             break;
           }
-          abce_npoppushdbl(abce, 2, (unsigned char)abce_mba_str(mbstr->u.area)[locint]);
+          abce_npoppushint(abce, 2, (unsigned char)abce_mba_str(mbstr->u.area)[locint]);
           break;
         }
         case ABCE_OPCODE_LISTGET:
@@ -3645,19 +3750,6 @@ outpbset:
           }
           break;
         }
-        case ABCE_OPCODE_LOGICAL_AND:
-        {
-          int b1, b2;
-          GETBOOLEAN(&b2, -1);
-          GETBOOLEAN(&b1, -2);
-          POP();
-          POP();
-          if (abce_push_boolean(abce, !!(b1 && b2)) != 0)
-          {
-            abce_maybeabort();
-          }
-          break;
-        }
         case ABCE_OPCODE_BITWISE_AND:
         {
           double d1, d2;
@@ -3665,20 +3757,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) & (abce_to_i64(d2)))) != 0)
-          {
-            abce_maybeabort();
-          }
-          break;
-        }
-        case ABCE_OPCODE_LOGICAL_OR:
-        {
-          int b1, b2;
-          GETBOOLEAN(&b2, -1);
-          GETBOOLEAN(&b1, -2);
-          POP();
-          POP();
-          if (abce_push_boolean(abce, !!(b1 || b2)) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) & (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3691,7 +3770,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) | (abce_to_i64(d2)))) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) | (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3704,7 +3783,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) ^ (abce_to_i64(d2)))) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) ^ (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3726,7 +3805,7 @@ outpbset:
           double d;
           GETDBL(&d, -1);
           POP();
-          if (abce_push_double(abce, ~abce_to_i64(d)) != 0)
+          if (abce_push_int(abce, ~abce_to_i64(d)) != 0)
           {
             abce_maybeabort();
           }
@@ -3791,7 +3870,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) >> (abce_to_i64(d2)))) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) >> (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3804,7 +3883,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) << (abce_to_i64(d2)))) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) << (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3813,11 +3892,16 @@ outpbset:
         case ABCE_OPCODE_ADD:
         {
           double d1, d2;
+          struct abce_mb *mbdbl, *mbdbl2;
+          int is_int;
+          GETMBPTR(&mbdbl, -1);
+          GETMBPTR(&mbdbl2, -2);
+          is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
           GETDBL(&d2, -1);
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, (d1 + d2)) != 0)
+          if ((is_int ? abce_push_int(abce, (d1 + d2)) : abce_push_double(abce, (d1 + d2))) != 0)
           {
             abce_maybeabort();
           }
@@ -3826,11 +3910,16 @@ outpbset:
         case ABCE_OPCODE_SUB:
         {
           double d1, d2;
+          struct abce_mb *mbdbl, *mbdbl2;
+          int is_int;
+          GETMBPTR(&mbdbl, -1);
+          GETMBPTR(&mbdbl2, -2);
+          is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
           GETDBL(&d2, -1);
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, (d1 - d2)) != 0)
+          if ((is_int ? abce_push_int(abce, (d1 - d2)) : abce_push_double(abce, (d1 - d2))) != 0)
           {
             abce_maybeabort();
           }
@@ -3839,11 +3928,16 @@ outpbset:
         case ABCE_OPCODE_MUL:
         {
           double d1, d2;
+          struct abce_mb *mbdbl, *mbdbl2;
+          int is_int;
+          GETMBPTR(&mbdbl, -1);
+          GETMBPTR(&mbdbl2, -2);
+          is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
           GETDBL(&d2, -1);
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, (d1 * d2)) != 0)
+          if ((is_int ? abce_push_int(abce, (d1 * d2)) : abce_push_double(abce, (d1 * d2))) != 0)
           {
             abce_maybeabort();
           }
@@ -3869,7 +3963,7 @@ outpbset:
           GETDBL(&d1, -2);
           POP();
           POP();
-          if (abce_push_double(abce, ((abce_to_i64(d1)) % (abce_to_i64(d2)))) != 0)
+          if (abce_push_int(abce, ((abce_to_i64(d1)) % (abce_to_i64(d2)))) != 0)
           {
             abce_maybeabort();
           }
@@ -3878,9 +3972,13 @@ outpbset:
         case ABCE_OPCODE_UNARY_MINUS:
         {
           double d;
+          struct abce_mb *mbdbl;
+          int is_int;
+          GETMBPTR(&mbdbl, -1);
+          is_int = (mbdbl->typ == ABCE_T_I);
           GETDBL(&d, -1);
           POP();
-          if (abce_push_double(abce, -d) != 0)
+          if ((is_int ? abce_push_int(abce, -d) : abce_push_double(abce, -d)) != 0)
           {
             abce_maybeabort();
           }
@@ -3916,19 +4014,19 @@ outpbset:
           switch (i)
           {
             case 0:
-              if (abce_push_double(abce, (uint8_t)abce_to_i8(d)) != 0)
+              if (abce_push_int(abce, (uint8_t)abce_to_i8(d)) != 0)
               {
                 abce_maybeabort();
               }
               break;
             case 1:
-              if (abce_push_double(abce, (uint16_t)abce_to_i16(d)) != 0)
+              if (abce_push_int(abce, (uint16_t)abce_to_i16(d)) != 0)
               {
                 abce_maybeabort();
               }
               break;
             case 2:
-              if (abce_push_double(abce, (uint32_t)abce_to_i32(d)) != 0)
+              if (abce_push_int(abce, (uint32_t)abce_to_i32(d)) != 0)
               {
                 abce_maybeabort();
               }
@@ -3968,19 +4066,19 @@ outpbset:
           switch (i)
           {
             case 0:
-              if (abce_push_double(abce, abce_uint8_to_int8(abce_to_u8(d))) != 0)
+              if (abce_push_int(abce, abce_uint8_to_int8(abce_to_u8(d))) != 0)
               {
                 abce_maybeabort();
               }
               break;
             case 1:
-              if (abce_push_double(abce, abce_uint16_to_int16(abce_to_u16(d))) != 0)
+              if (abce_push_int(abce, abce_uint16_to_int16(abce_to_u16(d))) != 0)
               {
                 abce_maybeabort();
               }
               break;
             case 2:
-              if (abce_push_double(abce, abce_uint32_to_int32(abce_to_u32(d))) != 0)
+              if (abce_push_int(abce, abce_uint32_to_int32(abce_to_u32(d))) != 0)
               {
                 abce_maybeabort();
               }
@@ -4090,7 +4188,7 @@ outpbset:
         {
           struct abce_mb *mb;
           GETMBPTR(&mb, -1);
-          abce_npoppushdbl(abce, 1, mb->typ);
+          abce_npoppushint(abce, 1, mb->typ);
           break;
         }
         case ABCE_OPCODE_DICTSET_MAINTAIN:
@@ -4210,7 +4308,7 @@ outpbset:
           struct abce_mb *mbt;
           VERIFYMB(-1, ABCE_T_T);
           GETMBPTR(&mbt, -1);
-	  abce_npoppushdbl(abce, 1, mbt->u.area->u.tree.sz);
+          abce_npoppushint(abce, 1, mbt->u.area->u.tree.sz);
           break;
         }
         case ABCE_OPCODE_SCOPEVAR_SET:
