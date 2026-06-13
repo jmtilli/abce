@@ -770,10 +770,12 @@ static inline int abce_is_int(double dbl)
   {
     is_int = ((double)(intmax_t)dbl == dbl);
   }
+#if 0 // This won't ever satisfy is_small:
   else if (dbl >= 0 && dbl <= (double)UINTMAX_MAX)
   {
     is_int = ((double)(uintmax_t)dbl == dbl);
   }
+#endif
   return is_small && is_int;
 }
 static inline int abce_cpush_double(struct abce *abce, double d)
