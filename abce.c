@@ -2127,3 +2127,25 @@ enum abce_errcode abce_get_type_err(enum abce_type typ)
     default: return ABCE_E_EXPECT_NIL; // RFE what to do?
   }
 }
+
+int abce_typemangle(enum abce_type typ)
+{
+  switch (typ)
+  {
+    case ABCE_T_I: return 51;
+    case ABCE_T_RG: return 38;
+    case ABCE_T_D: return 39;
+    case ABCE_T_B: return 40;
+    case ABCE_T_F: return 41;
+    case ABCE_T_BP: return 42;
+    case ABCE_T_IP: return 43;
+    case ABCE_T_N: return 44;
+    case ABCE_T_T: return 45;
+    case ABCE_T_IOS: return 46;
+    case ABCE_T_A: return 47;
+    case ABCE_T_S: return 48;
+    case ABCE_T_PB: return 49;
+    case ABCE_T_SC: return 50;
+    default: return 44; // RFE what to do?
+  }
+}

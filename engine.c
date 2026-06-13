@@ -4263,7 +4263,7 @@ outpbset:
         {
           struct abce_mb *mb;
           GETMBPTR(&mb, -1);
-          abce_npoppushint(abce, 1, mb->typ);
+          abce_npoppushint(abce, 1, abce_typemangle(mb->typ));
           break;
         }
         case ABCE_OPCODE_DICTSET_MAINTAIN:

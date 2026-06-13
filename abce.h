@@ -1761,6 +1761,8 @@ void abce_gc(struct abce *abce);
 
 void abce_compact(struct abce *abce);
 
+int abce_typemangle(enum abce_type typ);
+
 const char *abce_err_to_str(enum abce_errcode code);
 
 #ifdef WITH_LUA
