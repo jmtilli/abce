@@ -1414,6 +1414,7 @@ const char *abce_err_to_str(enum abce_errcode code)
   case ABCE_E_TREE_ENTRY_NOT_FOUND: return "Tree entry not found";
   case ABCE_E_TREE_KEY_NOT_STR: return "Tree key not string";
   case ABCE_E_EXPECT_RG: return "Expected recursion guard";
+  case ABCE_E_EXPECT_INT: return "Expected integer";
   case ABCE_E_EXPECT_DBL: return "Expected double-precision number";
   case ABCE_E_EXPECT_BOOL: return "Expected boolean";
   case ABCE_E_EXPECT_FUNC: return "Expected function address";
