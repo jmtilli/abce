@@ -765,7 +765,12 @@ static inline int abce_is_int(double dbl)
   {
     return 0;
   }
-  is_small = (dbl+1 != dbl || dbl-1 != dbl);
+  //is_small = (dbl+1 != dbl || dbl-1 != dbl);
+#ifdef __STDC_IEC_559__
+  is_small = dbl <= 9007199254740991LL && dbl >= -9007199254740991LL;
+#else
+  is_small = (dbl+1-dbl == 1 && dbl-1-dbl == -1);
+#endif
   if (dbl >= (double)INTMAX_MIN && dbl <= (double)INTMAX_MAX)
   {
     is_int = ((double)(intmax_t)dbl == dbl);
