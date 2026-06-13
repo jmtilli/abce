@@ -448,7 +448,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       int is_int;
       GETMBPTR(&mbdbl, -1);
       is_int = (mbdbl->typ == ABCE_T_I);
-      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B)
       {
         abce->err.code = ABCE_E_EXPECT_DBL;
         abce_mb_errreplace_noinline(abce, mbdbl);
@@ -1182,7 +1182,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       unsigned long long ull = 0;
       GETMBPTR(&mbdbl, -1);
       is_int = (mbdbl->typ == ABCE_T_I);
-      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B)
       {
         abce->err.code = ABCE_E_EXPECT_DBL;
         abce_mb_errreplace_noinline(abce, mbdbl);
@@ -3914,7 +3914,7 @@ outpbset:
           GETMBPTR(&mbdbl2, -2);
           mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl);
@@ -3922,7 +3922,7 @@ outpbset:
             ret = -EINVAL;
             break;
           }
-          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D && mbdbl2->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl2);
@@ -3949,7 +3949,7 @@ outpbset:
           GETMBPTR(&mbdbl2, -2);
           mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl);
@@ -3957,7 +3957,7 @@ outpbset:
             ret = -EINVAL;
             break;
           }
-          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D && mbdbl2->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl2);
@@ -3984,7 +3984,7 @@ outpbset:
           GETMBPTR(&mbdbl2, -2);
           mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl);
@@ -3992,7 +3992,7 @@ outpbset:
             ret = -EINVAL;
             break;
           }
-          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D && mbdbl2->typ != ABCE_T_B))
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl2);
@@ -4043,7 +4043,7 @@ outpbset:
           int is_int;
           GETMBPTR(&mbdbl, -1);
           is_int = (mbdbl->typ == ABCE_T_I);
-          if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+          if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D && mbdbl->typ != ABCE_T_B)
           {
             abce->err.code = ABCE_E_EXPECT_DBL;
             abce_mb_errreplace_noinline(abce, mbdbl);
