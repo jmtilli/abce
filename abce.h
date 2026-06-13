@@ -959,6 +959,28 @@ static inline int abce_push_double(struct abce *abce, double dbl)
   abce->sp++;
   return 0;
 }
+static inline int abce_push_maybe_int(struct abce *abce, double dbl, int is_int2)
+{
+  if (!abce_is_int(dbl))
+  {
+    is_int2 = 0;
+  }
+  if (abce_unlikely(abce->sp >= abce->stacklimit))
+  {
+    abce_double_stack(abce);
+  }
+  if (abce_unlikely(abce->sp >= abce->stacklimit))
+  {
+    abce->err.code = ABCE_E_STACK_OVERFLOW;
+    abce->err.mb.typ = is_int2 ? ABCE_T_I : ABCE_T_D;
+    abce->err.mb.u.d = dbl;
+    return -EOVERFLOW;
+  }
+  abce->stackbase[abce->sp].typ = is_int2 ? ABCE_T_I : ABCE_T_D;
+  abce->stackbase[abce->sp].u.d = dbl;
+  abce->sp++;
+  return 0;
+}
 static inline int abce_push_int(struct abce *abce, double dbl)
 {
   if (abce_unlikely(abce->sp >= abce->stacklimit))

@@ -458,7 +458,7 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       }
       dbl = mbdbl->u.d;
       POP();
-      if ((is_int ? abce_push_int(abce, fabs(dbl)) : abce_push_double(abce, fabs(dbl))) != 0)
+      if (abce_push_maybe_int(abce, fabs(dbl), is_int) != 0)
       {
         abce_maybeabort();
       }
@@ -3934,7 +3934,7 @@ outpbset:
           d1 = mbdbl2->u.d;
           POP();
           POP();
-          if ((is_int ? abce_push_int(abce, (d1 + d2)) : abce_push_double(abce, (d1 + d2))) != 0)
+          if (abce_push_maybe_int(abce, (d1 + d2), is_int) != 0)
           {
             abce_maybeabort();
           }
@@ -3969,7 +3969,7 @@ outpbset:
           d2 = mbdbl->u.d;
           POP();
           POP();
-          if ((is_int ? abce_push_int(abce, (d1 - d2)) : abce_push_double(abce, (d1 - d2))) != 0)
+          if (abce_push_maybe_int(abce, (d1 - d2), is_int) != 0)
           {
             abce_maybeabort();
           }
@@ -4004,7 +4004,7 @@ outpbset:
           d2 = mbdbl->u.d;
           POP();
           POP();
-          if ((is_int ? abce_push_int(abce, (d1 * d2)) : abce_push_double(abce, (d1 * d2))) != 0)
+          if (abce_push_maybe_int(abce, (d1 * d2), is_int) != 0)
           {
             abce_maybeabort();
           }
@@ -4053,7 +4053,7 @@ outpbset:
           }
           d = mbdbl->u.d;
           POP();
-          if ((is_int ? abce_push_int(abce, -d) : abce_push_double(abce, -d)) != 0)
+          if (abce_push_maybe_int(abce, -d, is_int))
           {
             abce_maybeabort();
           }
