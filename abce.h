@@ -362,6 +362,11 @@ static inline int abce_getboolean(int *b, struct abce *abce, int64_t idx)
   return 0;
 }
 
+static inline enum abce_errcode abce_get_type_err(enum abce_type typ)
+{
+  return (enum abce_errcode)typ; // Same numbers valid for both
+}
+
 static inline int abce_verifymb(struct abce *abce, int64_t idx, enum abce_type typ)
 {
   const struct abce_mb *mb;
@@ -373,7 +378,7 @@ static inline int abce_verifymb(struct abce *abce, int64_t idx, enum abce_type t
   mb = &abce->stackbase[addr];
   if (abce_unlikely(mb->typ != typ))
   {
-    abce->err.code = (enum abce_errcode)typ; // Same numbers valid for both
+    abce->err.code = abce_get_type_err(typ);
     abce_mb_errreplace_noinline(abce, mb);
     abce->err.val2 = idx;
     return -EINVAL;
@@ -483,7 +488,7 @@ static inline int abce_getmbtypedptr(struct abce_mb **mb, struct abce *abce, int
   mbptr = &abce->stackbase[addr];
   if (abce_unlikely(mbptr->typ != typ))
   {
-    abce->err.code = (enum abce_errcode)typ; // Same numbers valid for both
+    abce->err.code = abce_get_type_err(typ);
     abce_mb_errreplace_noinline(abce, mbptr);
     abce->err.val2 = idx;
     return -EINVAL;
