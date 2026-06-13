@@ -362,10 +362,7 @@ static inline int abce_getboolean(int *b, struct abce *abce, int64_t idx)
   return 0;
 }
 
-static inline enum abce_errcode abce_get_type_err(enum abce_type typ)
-{
-  return (enum abce_errcode)typ; // Same numbers valid for both
-}
+enum abce_errcode abce_get_type_err(enum abce_type typ);
 
 static inline int abce_verifymb(struct abce *abce, int64_t idx, enum abce_type typ)
 {

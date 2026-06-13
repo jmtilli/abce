@@ -95,24 +95,23 @@ static inline const char *abce_mba_const_str(const struct abce_mb_area *ar)
 {
   return (const char*)ar->uar;
 }
-// These must match error codes ABCE_E_EXPECT_*
 enum abce_type {
-  ABCE_T_T = 45,
-  ABCE_T_IOS = 46,
-  ABCE_T_A = 47,
-  ABCE_T_S = 48,
-  ABCE_T_PB = 49, // packet buffer
-  ABCE_T_SC = 50,
+  ABCE_T_T = 8,
+  ABCE_T_IOS = 13,
+  ABCE_T_A = 9,
+  ABCE_T_S = 10,
+  ABCE_T_PB = 11, // packet buffer
+  ABCE_T_SC = 12,
 
-  ABCE_T_RG = 38, // rec guard
-  ABCE_T_D = 39,
-  ABCE_T_B = 40,
-  ABCE_T_F = 41,
-  ABCE_T_BP = 42,
-  ABCE_T_IP = 43,
-  ABCE_T_N = 44,
+  ABCE_T_RG = 6, // rec guard
+  ABCE_T_D = 1,
+  ABCE_T_B = 2,
+  ABCE_T_F = 3,
+  ABCE_T_BP = 4,
+  ABCE_T_IP = 5,
+  ABCE_T_N = 7,
 
-  ABCE_T_I = 69, // integer
+  ABCE_T_I = 0, // integer
 };
 union abce_mb_union {
   double d;

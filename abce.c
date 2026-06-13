@@ -2104,3 +2104,25 @@ void abce_double_cache(struct abce *abce)
   abce->cachebase = newblock;
   abce->cachecap = cachenewcap;
 }
+
+enum abce_errcode abce_get_type_err(enum abce_type typ)
+{
+  switch (typ)
+  {
+    case ABCE_T_I: return ABCE_E_EXPECT_INT;
+    case ABCE_T_RG: return ABCE_E_EXPECT_RG;
+    case ABCE_T_D: return ABCE_E_EXPECT_DBL;
+    case ABCE_T_B: return ABCE_E_EXPECT_BOOL;
+    case ABCE_T_F: return ABCE_E_EXPECT_FUNC;
+    case ABCE_T_BP: return ABCE_E_EXPECT_BP;
+    case ABCE_T_IP: return ABCE_E_EXPECT_IP;
+    case ABCE_T_N: return ABCE_E_EXPECT_NIL;
+    case ABCE_T_T: return ABCE_E_EXPECT_TREE;
+    case ABCE_T_IOS: return ABCE_E_EXPECT_IOS;
+    case ABCE_T_A: return ABCE_E_EXPECT_ARRAY;
+    case ABCE_T_S: return ABCE_E_EXPECT_STR;
+    case ABCE_T_PB: return ABCE_E_EXPECT_PB;
+    case ABCE_T_SC: return ABCE_E_EXPECT_SCOPE;
+    default: return ABCE_E_EXPECT_NIL; // RFE what to do?
+  }
+}
