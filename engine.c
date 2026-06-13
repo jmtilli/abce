@@ -448,7 +448,15 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       int is_int;
       GETMBPTR(&mbdbl, -1);
       is_int = (mbdbl->typ == ABCE_T_I);
-      GETDBL(&dbl, -1);
+      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+      {
+        abce->err.code = ABCE_E_EXPECT_DBL;
+        abce_mb_errreplace_noinline(abce, mbdbl);
+        abce->err.val2 = -1;
+        ret = -EINVAL;
+        break;
+      }
+      dbl = mbdbl->u.d;
       POP();
       if ((is_int ? abce_push_int(abce, fabs(dbl)) : abce_push_double(abce, fabs(dbl))) != 0)
       {
@@ -1174,7 +1182,15 @@ abce_mid(struct abce *abce, uint16_t ins, unsigned char *addcode, size_t addsz)
       unsigned long long ull = 0;
       GETMBPTR(&mbdbl, -1);
       is_int = (mbdbl->typ == ABCE_T_I);
-      GETDBL(&dbl, -1);
+      if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+      {
+        abce->err.code = ABCE_E_EXPECT_DBL;
+        abce_mb_errreplace_noinline(abce, mbdbl);
+        abce->err.val2 = -1;
+        ret = -EINVAL;
+        break;
+      }
+      dbl = mbdbl->u.d;
       if (is_int)
       {
         ll = abce_to_ll(dbl);
@@ -3894,11 +3910,28 @@ outpbset:
           double d1, d2;
           struct abce_mb *mbdbl, *mbdbl2;
           int is_int;
-          GETMBPTR(&mbdbl, -1);
+          //GETMBPTR(&mbdbl, -1);
           GETMBPTR(&mbdbl2, -2);
+          mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          GETDBL(&d2, -1);
-          GETDBL(&d1, -2);
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl);
+            abce->err.val2 = -1;
+            ret = -EINVAL;
+            break;
+          }
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl2);
+            abce->err.val2 = -2;
+            ret = -EINVAL;
+            break;
+          }
+          d2 = mbdbl->u.d;
+          d1 = mbdbl2->u.d;
           POP();
           POP();
           if ((is_int ? abce_push_int(abce, (d1 + d2)) : abce_push_double(abce, (d1 + d2))) != 0)
@@ -3912,11 +3945,28 @@ outpbset:
           double d1, d2;
           struct abce_mb *mbdbl, *mbdbl2;
           int is_int;
-          GETMBPTR(&mbdbl, -1);
+          //GETMBPTR(&mbdbl, -1);
           GETMBPTR(&mbdbl2, -2);
+          mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          GETDBL(&d2, -1);
-          GETDBL(&d1, -2);
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl);
+            abce->err.val2 = -1;
+            ret = -EINVAL;
+            break;
+          }
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl2);
+            abce->err.val2 = -2;
+            ret = -EINVAL;
+            break;
+          }
+          d1 = mbdbl2->u.d;
+          d2 = mbdbl->u.d;
           POP();
           POP();
           if ((is_int ? abce_push_int(abce, (d1 - d2)) : abce_push_double(abce, (d1 - d2))) != 0)
@@ -3930,11 +3980,28 @@ outpbset:
           double d1, d2;
           struct abce_mb *mbdbl, *mbdbl2;
           int is_int;
-          GETMBPTR(&mbdbl, -1);
+          //GETMBPTR(&mbdbl, -1);
           GETMBPTR(&mbdbl2, -2);
+          mbdbl = &abce->stackbase[abce->sp-1];
           is_int = ((mbdbl->typ == ABCE_T_I) && (mbdbl2->typ == ABCE_T_I));
-          GETDBL(&d2, -1);
-          GETDBL(&d1, -2);
+          if (abce_unlikely(mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl);
+            abce->err.val2 = -1;
+            ret = -EINVAL;
+            break;
+          }
+          if (abce_unlikely(mbdbl2->typ != ABCE_T_I && mbdbl2->typ != ABCE_T_D))
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl2);
+            abce->err.val2 = -2;
+            ret = -EINVAL;
+            break;
+          }
+          d1 = mbdbl2->u.d;
+          d2 = mbdbl->u.d;
           POP();
           POP();
           if ((is_int ? abce_push_int(abce, (d1 * d2)) : abce_push_double(abce, (d1 * d2))) != 0)
@@ -3976,7 +4043,15 @@ outpbset:
           int is_int;
           GETMBPTR(&mbdbl, -1);
           is_int = (mbdbl->typ == ABCE_T_I);
-          GETDBL(&d, -1);
+          if (mbdbl->typ != ABCE_T_I && mbdbl->typ != ABCE_T_D)
+          {
+            abce->err.code = ABCE_E_EXPECT_DBL;
+            abce_mb_errreplace_noinline(abce, mbdbl);
+            abce->err.val2 = -1;
+            ret = -EINVAL;
+            break;
+          }
+          d = mbdbl->u.d;
           POP();
           if ((is_int ? abce_push_int(abce, -d) : abce_push_double(abce, -d)) != 0)
           {
