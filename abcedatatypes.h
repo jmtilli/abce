@@ -112,7 +112,7 @@ enum abce_type {
   ABCE_T_IP = 43,
   ABCE_T_N = 44,
 
-  ABCE_T_I = 51, // integer
+  ABCE_T_I = 69, // integer
 };
 union abce_mb_union {
   double d;
