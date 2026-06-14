@@ -1061,7 +1061,8 @@ int abce_caj_feed(struct abce_caj_ctx *caj, const void *vdata, size_t usz, int e
 			}
 			for (j = i; j < i + szret; j++)
 			{
-				if (cdata[j] == '.' || cdata[j] == 'e')
+				if (cdata[j] == '.' || cdata[j] == 'e' ||
+				    cdata[j] == 'E')
 				{
 					caj->is_integer = 0;
 				}
@@ -1773,7 +1774,8 @@ state8:
 			}
 			for (j = (ptrdiff_t)caj->i; j < (ptrdiff_t)caj->i + szret; j++)
 			{
-				if (cdata[j] == '.' || cdata[j] == 'e')
+				if (cdata[j] == '.' || cdata[j] == 'e' ||
+				    cdata[j] == 'E')
 				{
 					caj->is_integer = 0;
 				}
