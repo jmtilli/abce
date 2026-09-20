@@ -2,6 +2,7 @@
 #define _ABCE_RBTREE_H_
 
 #include "abce_errno.h"
+#include "abcelikely.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,10 +10,18 @@ extern "C" {
 
 struct abce_rb_tree_node {
   int is_black;
-  struct abce_rb_tree_node *left;
-  struct abce_rb_tree_node *right;
+  struct abce_rb_tree_node *children[2];
   struct abce_rb_tree_node *parent;
 };
+
+static inline struct abce_rb_tree_node *abce_rb_tree_left(struct abce_rb_tree_node *node)
+{
+  return node->children[0];
+}
+static inline struct abce_rb_tree_node *abce_rb_tree_right(struct abce_rb_tree_node *node)
+{
+  return node->children[1];
+}
 
 typedef int (*abce_rb_tree_cmp)(struct abce_rb_tree_node *a, struct abce_rb_tree_node *b, void *ud);
 typedef int (*abce_rb_tree_cmp_asym)(const void *a, struct abce_rb_tree_node *b, void *ud);
@@ -96,11 +105,11 @@ static inline void abce_rb_tree_delete(struct abce_rb_tree *tree, struct abce_rb
         (cmp)((tofind), __abce_rb_tree_find_node, (cmp_userdata)); \
       if (__abce_rb_tree_find_res < 0) \
       { \
-        __abce_rb_tree_find_node = __abce_rb_tree_find_node->left; \
+        __abce_rb_tree_find_node = __abce_rb_tree_find_node->children[0]; \
       } \
       else if (__abce_rb_tree_find_res > 0) \
       { \
-        __abce_rb_tree_find_node = __abce_rb_tree_find_node->right; \
+        __abce_rb_tree_find_node = __abce_rb_tree_find_node->children[1]; \
       } \
       else \
       { \
@@ -127,6 +136,13 @@ static inline struct abce_rb_tree_node *abce_rb_tree_nocmp_find(
   while (node != NULL)
   {
     int res = cmp(tofind, node, cmp_userdata);
+    #if 1
+    if (abce_likely(res == 0))
+    {
+      return node;
+    }
+    node = node->children[res > 0];
+    #else
     if (res < 0)
     {
       node = node->left;
@@ -139,6 +155,7 @@ static inline struct abce_rb_tree_node *abce_rb_tree_nocmp_find(
     {
       break;
     }
+    #endif
   }
   return node;
 }
@@ -151,6 +168,13 @@ static inline struct abce_rb_tree_node *abce_rb_tree_nocmp_find_asym(
   while (node != NULL)
   {
     int res = cmp(tofind, node, cmp_userdata);
+    #if 1
+    if (abce_likely(res == 0))
+    {
+      return node;
+    }
+    node = node->children[res > 0];
+    #else
     if (res < 0)
     {
       node = node->left;
@@ -163,6 +187,7 @@ static inline struct abce_rb_tree_node *abce_rb_tree_nocmp_find_asym(
     {
       break;
     }
+    #endif
   }
   return node;
 }
@@ -176,8 +201,8 @@ static inline int abce_rb_tree_nocmp_insert_nonexist(
   int finalres = 0;
 
   toinsert->is_black = 0;
-  toinsert->left = NULL;
-  toinsert->right = NULL;
+  toinsert->children[0] = NULL;
+  toinsert->children[1] = NULL;
   if (node == NULL)
   {
     tree->root = toinsert;
@@ -189,25 +214,25 @@ static inline int abce_rb_tree_nocmp_insert_nonexist(
     int res = cmp(toinsert, node, cmp_ud);
     if (res < 0)
     {
-      if (node->left == NULL)
+      if (node->children[0] == NULL)
       {
-        node->left = toinsert;
+        node->children[0] = toinsert;
         toinsert->parent = node;
         abce_rb_tree_nocmp_insert_repair(tree, toinsert);
         break;
       }
-      node = node->left;
+      node = node->children[0];
     }
     else if (res > 0)
     {
-      if (node->right == NULL)
+      if (node->children[1] == NULL)
       {
-        node->right = toinsert;
+        node->children[1] = toinsert;
         toinsert->parent = node;
         abce_rb_tree_nocmp_insert_repair(tree, toinsert);
         break;
       }
-      node = node->right;
+      node = node->children[1];
     }
     else
     {
@@ -230,8 +255,8 @@ static inline int abce_rb_tree_nocmp_insert_nonexist(
     struct abce_rb_tree_node *__abce_rb_tree_insert_node = __abce_rb_tree_insert_tree->root; \
     int __abce_rb_tree_insert_finalres = 0; \
     __abce_rb_tree_insert_toinsert->is_black = 0; \
-    __abce_rb_tree_insert_toinsert->left = NULL; \
-    __abce_rb_tree_insert_toinsert->right = NULL; \
+    __abce_rb_tree_insert_toinsert->children[0] = NULL; \
+    __abce_rb_tree_insert_toinsert->children[1] = NULL; \
     if (__abce_rb_tree_insert_node == NULL) \
     { \
       __abce_rb_tree_insert_tree->root = __abce_rb_tree_insert_toinsert; \
@@ -246,27 +271,27 @@ static inline int abce_rb_tree_nocmp_insert_nonexist(
                              __abce_rb_tree_insert_cmp_ud); \
       if (__abce_rb_tree_insert_res < 0) \
       { \
-        if (__abce_rb_tree_insert_node->left == NULL) \
+        if (__abce_rb_tree_insert_node->children[0] == NULL) \
         { \
-          __abce_rb_tree_insert_node->left = __abce_rb_tree_insert_toinsert; \
+          __abce_rb_tree_insert_node->children[0] = __abce_rb_tree_insert_toinsert; \
           __abce_rb_tree_insert_toinsert->parent = __abce_rb_tree_insert_node; \
           abce_rb_tree_nocmp_insert_repair(__abce_rb_tree_insert_tree, \
                                       __abce_rb_tree_insert_toinsert); \
           break; \
         } \
-        __abce_rb_tree_insert_node = __abce_rb_tree_insert_node->left; \
+        __abce_rb_tree_insert_node = __abce_rb_tree_insert_node->children[0]; \
       } \
       else if (__abce_rb_tree_insert_res > 0) \
       { \
-        if (__abce_rb_tree_insert_node->right == NULL) \
+        if (__abce_rb_tree_insert_node->children[1] == NULL) \
         { \
-          __abce_rb_tree_insert_node->right = __abce_rb_tree_insert_toinsert; \
+          __abce_rb_tree_insert_node->children[1] = __abce_rb_tree_insert_toinsert; \
           __abce_rb_tree_insert_toinsert->parent = __abce_rb_tree_insert_node; \
           abce_rb_tree_nocmp_insert_repair(__abce_rb_tree_insert_tree, \
                                       __abce_rb_tree_insert_toinsert); \
           break; \
         } \
-        __abce_rb_tree_insert_node = __abce_rb_tree_insert_node->right; \
+        __abce_rb_tree_insert_node = __abce_rb_tree_insert_node->children[1]; \
       } \
       else \
       { \

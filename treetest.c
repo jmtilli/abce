@@ -18,13 +18,13 @@ void mydump_tre(int indent, const struct abce_rb_tree_node *node)
     printf(" ");
   }
   printf("left:\n");
-  mydump_tre(indent+1, node->left);
+  mydump_tre(indent+1, abce_rb_tree_left(node));
   for (i = 0; i < indent; i++)
   {
     printf(" ");
   }
   printf("right:\n");
-  mydump_tre(indent+1, node->right);
+  mydump_tre(indent+1, abce_rb_tree_right(node));
 }
 
 int main(int argc, char **argv)

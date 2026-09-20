@@ -105,11 +105,11 @@ abce_rbtree_get_prev(const struct abce_mb **mbreskey,
   {
     while (node != NULL)
     {
-      if (node->right == NULL)
+      if (node->children[1] == NULL)
       {
         break;
       }
-      node = node->right;
+      node = node->children[1];
     }
     goto out;
   }
@@ -118,42 +118,42 @@ abce_rbtree_get_prev(const struct abce_mb **mbreskey,
     int res = abce_str_cmp_halfsym(mbkey, node, NULL);
     if (res < 0)
     {
-      if (node->left == NULL)
+      if (node->children[0] == NULL)
       {
         //goto out;
         break;
       }
-      node = node->left;
+      node = node->children[0];
     }
     else if (res > 0)
     {
-      if (node->right == NULL)
+      if (node->children[1] == NULL)
       {
         //break;
         goto out;
       }
-      node = node->right;
+      node = node->children[1];
     }
     else if (res == 0)
     {
       break;
     }
   }
-  if (node->left != NULL)
+  if (node->children[0] != NULL)
   {
-    node = node->left;
+    node = node->children[0];
     for (;;)
     {
-      if (node->right == NULL)
+      if (node->children[1] == NULL)
       {
         break;
       }
-      node = node->right;
+      node = node->children[1];
     }
   }
   else
   {
-    while (node->parent && node->parent->left == node)
+    while (node->parent && node->parent->children[0] == node)
     {
       node = node->parent;
     }
@@ -190,11 +190,11 @@ abce_rbtree_get_next(const struct abce_mb **mbreskey,
   {
     while (node != NULL)
     {
-      if (node->left == NULL)
+      if (node->children[0] == NULL)
       {
         break;
       }
-      node = node->left;
+      node = node->children[0];
     }
     goto out;
   }
@@ -203,41 +203,41 @@ abce_rbtree_get_next(const struct abce_mb **mbreskey,
     int res = abce_str_cmp_halfsym(mbkey, node, NULL);
     if (res < 0)
     {
-      if (node->left == NULL)
+      if (node->children[0] == NULL)
       {
         goto out;
         //break;
       }
-      node = node->left;
+      node = node->children[0];
     }
     else if (res > 0)
     {
-      if (node->right == NULL)
+      if (node->children[1] == NULL)
       {
         break;
       }
-      node = node->right;
+      node = node->children[1];
     }
     else if (res == 0)
     {
       break;
     }
   }
-  if (node->right != NULL)
+  if (node->children[1] != NULL)
   {
-    node = node->right;
+    node = node->children[1];
     for (;;)
     {
-      if (node->left == NULL)
+      if (node->children[0] == NULL)
       {
         break;
       }
-      node = node->left;
+      node = node->children[0];
     }
   }
   else
   {
-    while (node->parent && node->parent->right == node)
+    while (node->parent && node->parent->children[1] == node)
     {
       node = node->parent;
     }

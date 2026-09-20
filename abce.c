@@ -306,13 +306,13 @@ void abce_mark_tree(struct abce *abce, struct abce_rb_tree_node *n,
   mbe = ABCE_CONTAINER_OF(n, struct abce_mb_rb_entry, n);
   abce_enqueue_stackentry_mb(&mbe->key, stackbase, stackidx, stackcap);
   abce_enqueue_stackentry_mb(&mbe->val, stackbase, stackidx, stackcap);
-  if (n->left)
+  if (abce_rb_tree_left(n))
   {
-    abce_mark_tree(abce, n->left, stackbase, stackidx, stackcap);
+    abce_mark_tree(abce, abce_rb_tree_left(n), stackbase, stackidx, stackcap);
   }
-  if (n->right)
+  if (abce_rb_tree_right(n))
   {
-    abce_mark_tree(abce, n->right, stackbase, stackidx, stackcap);
+    abce_mark_tree(abce, abce_rb_tree_right(n), stackbase, stackidx, stackcap);
   }
 }
 

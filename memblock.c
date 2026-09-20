@@ -285,11 +285,11 @@ void tree_to_lua(lua_State *lua, const struct abce_rb_tree_node *n)
   {
     return;
   }
-  tree_to_lua(lua, n->left);
+  tree_to_lua(lua, abce_rb_tree_left(n));
   mb_to_lua(lua, &e->key);
   mb_to_lua(lua, &e->val);
   lua_settable(lua, -3);
-  tree_to_lua(lua, n->right);
+  tree_to_lua(lua, abce_rb_tree_right(n));
 }
 
 void mb_to_lua(lua_State *lua, const struct abce_mb *mb)
@@ -1137,7 +1137,7 @@ void abce_mb_treedump(const struct abce_rb_tree_node *n, int *first,
     return;
   }
 
-  abce_mb_treedump(n->left, first, ll);
+  abce_mb_treedump(abce_rb_tree_left(n), first, ll);
   if (*first)
   {
     *first = 0;
@@ -1150,7 +1150,7 @@ void abce_mb_treedump(const struct abce_rb_tree_node *n, int *first,
   abce_mb_dump_impl(&e->key, ll);
   printf(": ");
   abce_mb_dump_impl(&e->val, ll);
-  abce_mb_treedump(n->right, first, ll);
+  abce_mb_treedump(abce_rb_tree_right(n), first, ll);
 }
 
 void abce_dump_str(const char *str, size_t sz)

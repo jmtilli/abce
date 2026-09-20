@@ -6,25 +6,25 @@
 static int abce_rb_subtree_ptrs_valid(struct abce_rb_tree_node *node)
 {
   int resultl = 0, resultr = 0;
-  if (node->left != NULL)
+  if (node->children[0] != NULL)
   {
-    if (node->left->parent != node)
+    if (node->children[0]->parent != node)
     {
       return 0;
     }
-    resultl = abce_rb_subtree_ptrs_valid(node->left);
+    resultl = abce_rb_subtree_ptrs_valid(node->children[0]);
     if (resultl == 0)
     {
       return 0;
     }
   }
-  if (node->right != NULL)
+  if (node->children[1] != NULL)
   {
-    if (node->right->parent != node)
+    if (node->children[1]->parent != node)
     {
       return 0;
     }
-    resultr = abce_rb_subtree_ptrs_valid(node->right);
+    resultr = abce_rb_subtree_ptrs_valid(node->children[1]);
     if (resultr == 0)
     {
       return 0;
@@ -36,25 +36,25 @@ static int abce_rb_subtree_ptrs_valid(struct abce_rb_tree_node *node)
 static int abce_rb_subtree_height(struct abce_rb_tree_node *node)
 {
   int resultl = 0, resultr = 0;
-  if (node->left != NULL)
+  if (node->children[0] != NULL)
   {
-    if (node->left->parent != node)
+    if (node->children[0]->parent != node)
     {
       return -1;
     }
-    resultl = abce_rb_subtree_height(node->left);
+    resultl = abce_rb_subtree_height(node->children[0]);
     if (resultl < 0)
     {
       return -1;
     }
   }
-  if (node->right != NULL)
+  if (node->children[1] != NULL)
   {
-    if (node->right->parent != node)
+    if (node->children[1]->parent != node)
     {
       return -1;
     }
-    resultr = abce_rb_subtree_height(node->right);
+    resultr = abce_rb_subtree_height(node->children[1]);
     if (resultr < 0)
     {
       return -1;
@@ -110,11 +110,11 @@ struct abce_rb_tree_node *abce_rb_tree_nocmp_leftmost(struct abce_rb_tree_nocmp 
   }
   for (;;)
   {
-    if (node->left == NULL)
+    if (node->children[0] == NULL)
     {
       return node;
     }
-    node = node->left;
+    node = node->children[0];
   }
 }
 
@@ -127,11 +127,11 @@ struct abce_rb_tree_node *abce_rb_tree_nocmp_rightmost(struct abce_rb_tree_nocmp
   }
   for (;;)
   {
-    if (node->right == NULL)
+    if (node->children[1] == NULL)
     {
       return node;
     }
-    node = node->right;
+    node = node->children[1];
   }
 }
 
@@ -142,13 +142,13 @@ static inline struct abce_rb_tree_node *sibling(struct abce_rb_tree_node *node)
   {
     return NULL;
   }
-  if (node == p->left)
+  if (node == p->children[0])
   {
-    return p->right;
+    return p->children[1];
   }
   else
   {
-    return p->left;
+    return p->children[0];
   }
 }
 
@@ -158,13 +158,13 @@ static inline struct abce_rb_tree_node *sibling_parent(struct abce_rb_tree_node 
   {
     return NULL;
   }
-  if (node == p->left)
+  if (node == p->children[0])
   {
-    return p->right;
+    return p->children[1];
   }
   else
   {
-    return p->left;
+    return p->children[0];
   }
 }
 
@@ -182,24 +182,24 @@ static inline struct abce_rb_tree_node *uncle(struct abce_rb_tree_node *node)
 static inline void rotate_left(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *p)
 {
   struct abce_rb_tree_node *parent = p->parent;
-  struct abce_rb_tree_node *q = p->right;
-  struct abce_rb_tree_node *a = p->left;
-  struct abce_rb_tree_node *b = q->left;
-  struct abce_rb_tree_node *c = q->right;
+  struct abce_rb_tree_node *q = p->children[1];
+  struct abce_rb_tree_node *a = p->children[0];
+  struct abce_rb_tree_node *b = q->children[0];
+  struct abce_rb_tree_node *c = q->children[1];
   //printf("rotating left\n");
-  p->left = a;
+  p->children[0] = a;
   if (a)
   {
     a->parent = p;
   }
-  p->right = b;
+  p->children[1] = b;
   if (b)
   {
     b->parent = p;
   }
-  q->left = p;
+  q->children[0] = p;
   p->parent = q;
-  q->right = c;
+  q->children[1] = c;
   if (c)
   {
     c->parent = q;
@@ -210,14 +210,14 @@ static inline void rotate_left(struct abce_rb_tree_nocmp *tree, struct abce_rb_t
     q->parent = NULL;
     return;
   }
-  if (parent->left == p)
+  if (parent->children[0] == p)
   {
-    parent->left = q;
+    parent->children[0] = q;
     q->parent = parent;
   }
-  else if (parent->right == p)
+  else if (parent->children[1] == p)
   {
-    parent->right = q;
+    parent->children[1] = q;
     q->parent = parent;
   }
   else
@@ -229,24 +229,24 @@ static inline void rotate_left(struct abce_rb_tree_nocmp *tree, struct abce_rb_t
 static inline void rotate_right(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *q)
 {
   struct abce_rb_tree_node *parent = q->parent;
-  struct abce_rb_tree_node *p = q->left;
-  struct abce_rb_tree_node *a = p->left;
-  struct abce_rb_tree_node *b = p->right;
-  struct abce_rb_tree_node *c = q->right;
+  struct abce_rb_tree_node *p = q->children[0];
+  struct abce_rb_tree_node *a = p->children[0];
+  struct abce_rb_tree_node *b = p->children[1];
+  struct abce_rb_tree_node *c = q->children[1];
   //printf("rotating right\n");
-  p->left = a;
+  p->children[0] = a;
   if (a)
   {
     a->parent = p;
   }
-  p->right = q;
+  p->children[1] = q;
   q->parent = p;
-  q->left = b;
+  q->children[0] = b;
   if (b)
   {
     b->parent = q;
   }
-  q->right = c;
+  q->children[1] = c;
   if (c)
   {
     c->parent = q;
@@ -257,14 +257,14 @@ static inline void rotate_right(struct abce_rb_tree_nocmp *tree, struct abce_rb_
     p->parent = NULL;
     return;
   }
-  if (parent->left == q)
+  if (parent->children[0] == q)
   {
-    parent->left = p;
+    parent->children[0] = p;
     p->parent = parent;
   }
-  else if (parent->right == q)
+  else if (parent->children[1] == q)
   {
-    parent->right = p;
+    parent->children[1] = p;
     p->parent = parent;
   }
   else
@@ -295,22 +295,22 @@ void abce_rb_tree_nocmp_insert_repair(struct abce_rb_tree_nocmp *tree, struct ab
     struct abce_rb_tree_node *p = node->parent;
     struct abce_rb_tree_node *g = p->parent;
     //printf("case 4 %p %p\n", p, g);
-    if (g->left && node == g->left->right)
+    if (g->children[0] && node == g->children[0]->children[1])
     {
       //printf("case 4.1\n");
       rotate_left(tree, p);
-      node = node->left;
+      node = node->children[0];
     }
-    else if (g->right && node == g->right->left)
+    else if (g->children[1] && node == g->children[1]->children[0])
     {
       //printf("case 4.2\n");
       rotate_right(tree, p);
-      node = node->right; 
+      node = node->children[1]; 
     }
     p = node->parent;
     g = p->parent;
     //printf("case 4 cont %p %p\n", p, g);
-    if (node == p->left)
+    if (node == p->children[0])
     {
       //printf("case 4 step 2.1\n");
       rotate_right(tree, g);
@@ -329,8 +329,8 @@ void abce_rb_tree_insert(struct abce_rb_tree *tree, struct abce_rb_tree_node *no
 {
   struct abce_rb_tree_node *node2;
   node->is_black = 0;
-  node->left = NULL;
-  node->right = NULL;
+  node->children[0] = NULL;
+  node->children[1] = NULL;
   if (tree->nocmp.root == NULL)
   {
     tree->nocmp.root = node;
@@ -343,25 +343,25 @@ void abce_rb_tree_insert(struct abce_rb_tree *tree, struct abce_rb_tree_node *no
   {
     if (tree->cmp(node, node2, tree->cmp_userdata) < 0)
     {
-      if (node2->left == NULL)
+      if (node2->children[0] == NULL)
       {
-        node2->left = node;
+        node2->children[0] = node;
         node->parent = node2;
         abce_rb_tree_nocmp_insert_repair(&tree->nocmp, node);
         return;
       }
-      node2 = node2->left;
+      node2 = node2->children[0];
     }
     else
     {
-      if (node2->right == NULL)
+      if (node2->children[1] == NULL)
       {
-        node2->right = node;
+        node2->children[1] = node;
         node->parent = node2;
         abce_rb_tree_nocmp_insert_repair(&tree->nocmp, node);
         return;
       }
-      node2 = node2->right;
+      node2 = node2->children[1];
     }
   }
 }
@@ -369,7 +369,7 @@ void abce_rb_tree_insert(struct abce_rb_tree *tree, struct abce_rb_tree_node *no
 static inline int is_leaf(struct abce_rb_tree_node *node)
 {
   return node == NULL;
-  //return node->left == NULL && node->right == NULL;
+  //return node->children[0] == NULL && node->children[1] == NULL;
 }
 
 static void abce_rb_tree_delete_case6(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *n, struct abce_rb_tree_node *parent)
@@ -379,14 +379,14 @@ static void abce_rb_tree_delete_case6(struct abce_rb_tree_nocmp *tree, struct ab
   s->is_black = parent->is_black;
   parent->is_black = 1;
  
-  if (n == parent->left)
+  if (n == parent->children[0])
   {
-    s->right->is_black = 1;
+    s->children[1]->is_black = 1;
     rotate_left(tree, parent);
   }
   else
   {
-    s->left->is_black = 1;
+    s->children[0]->is_black = 1;
     rotate_right(tree, parent);
   }
 }
@@ -397,20 +397,20 @@ static void abce_rb_tree_delete_case5(struct abce_rb_tree_nocmp *tree, struct ab
  
   if (s->is_black)
   {
-    if ((n == parent->left) &&
-        (s->right == NULL || s->right->is_black) &&
-        (s->left != NULL && s->left->is_black == 0))
+    if ((n == parent->children[0]) &&
+        (s->children[1] == NULL || s->children[1]->is_black) &&
+        (s->children[0] != NULL && s->children[0]->is_black == 0))
     {
       s->is_black = 0;
-      s->left->is_black = 1;
+      s->children[0]->is_black = 1;
       rotate_right(tree, s);
     }
-    else if ((n == parent->right) &&
-             (s->left == NULL || s->left->is_black) &&
-             (s->right != NULL && s->right->is_black == 0))
+    else if ((n == parent->children[1]) &&
+             (s->children[0] == NULL || s->children[0]->is_black) &&
+             (s->children[1] != NULL && s->children[1]->is_black == 0))
     {
       s->is_black = 0;
-      s->right->is_black = 1;
+      s->children[1]->is_black = 1;
       rotate_left(tree, s);
     }
   }
@@ -422,8 +422,8 @@ static void abce_rb_tree_delete_case4(struct abce_rb_tree_nocmp *tree, struct ab
   struct abce_rb_tree_node *s = sibling_parent(n, parent);
   if ((parent->is_black == 0) &&
       (s == NULL || s->is_black) &&
-      (s->left == NULL || s->left->is_black) &&
-      (s->right == NULL || s->right->is_black))
+      (s->children[0] == NULL || s->children[0]->is_black) &&
+      (s->children[1] == NULL || s->children[1]->is_black))
   {
     s->is_black = 0;
     parent->is_black = 1;
@@ -442,8 +442,8 @@ static void abce_rb_tree_delete_case3(struct abce_rb_tree_nocmp *tree, struct ab
   //printf("case3\n");
   if ((parent == NULL || parent->is_black) &&
       (s == NULL || s->is_black) &&
-      (s->left == NULL || s->left->is_black) &&
-      (s->right == NULL || s->right->is_black))
+      (s->children[0] == NULL || s->children[0]->is_black) &&
+      (s->children[1] == NULL || s->children[1]->is_black))
   {
     s->is_black = 0;
     abce_rb_tree_delete_case1(tree, parent, parent->parent);
@@ -462,7 +462,7 @@ static void abce_rb_tree_delete_case2(struct abce_rb_tree_nocmp *tree, struct ab
   {
     parent->is_black = 0;
     s->is_black = 1;
-    if (n == parent->left)
+    if (n == parent->children[0])
     {
       rotate_left(tree, parent);
     }
@@ -486,28 +486,28 @@ static void abce_rb_tree_delete_case1(struct abce_rb_tree_nocmp *tree, struct ab
 static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *n1, struct abce_rb_tree_node *n2)
 {
   struct abce_rb_tree_node *n1_parent = n1->parent;
-  struct abce_rb_tree_node *n1_left = n1->left;
-  struct abce_rb_tree_node *n1_right = n1->right;
+  struct abce_rb_tree_node *n1_left = n1->children[0];
+  struct abce_rb_tree_node *n1_right = n1->children[1];
   int n1_is_black = n1->is_black;
   struct abce_rb_tree_node *n2_parent = n2->parent;
-  struct abce_rb_tree_node *n2_left = n2->left;
-  struct abce_rb_tree_node *n2_right = n2->right;
+  struct abce_rb_tree_node *n2_left = n2->children[0];
+  struct abce_rb_tree_node *n2_right = n2->children[1];
   int n2_is_black = n2->is_black;
-  if (n2_parent == n1 && n1->left == n2)
+  if (n2_parent == n1 && n1->children[0] == n2)
   {
-    n1->left = n2_left;
-    n1->right = n2_right;
+    n1->children[0] = n2_left;
+    n1->children[1] = n2_right;
     n1->parent = n2;
-    if (n1->left)
+    if (n1->children[0])
     {
-      n1->left->parent = n1;
+      n1->children[0]->parent = n1;
     }
-    if (n1->right)
+    if (n1->children[1])
     {
-      n1->right->parent = n1;
+      n1->children[1]->parent = n1;
     }
-    n2->left = n1;
-    n2->right = n1_right;
+    n2->children[0] = n1;
+    n2->children[1] = n1_right;
     n2->parent = n1_parent;
     if (n1_right)
     {
@@ -517,13 +517,13 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
     {
       tree->root = n2;
     }
-    else if (n2->parent->left == n1)
+    else if (n2->parent->children[0] == n1)
     {
-      n2->parent->left = n2;
+      n2->parent->children[0] = n2;
     }
-    else if (n2->parent->right == n1)
+    else if (n2->parent->children[1] == n1)
     {
-      n2->parent->right = n2;
+      n2->parent->children[1] = n2;
     }
     else
     {
@@ -534,21 +534,21 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
     n2->is_black = n1_is_black;
     return;
   }
-  if (n2_parent == n1 && n1->right == n2)
+  if (n2_parent == n1 && n1->children[1] == n2)
   {
-    n1->left = n2_left;
-    n1->right = n2_right;
+    n1->children[0] = n2_left;
+    n1->children[1] = n2_right;
     n1->parent = n2;
-    if (n1->left)
+    if (n1->children[0])
     {
-      n1->left->parent = n1;
+      n1->children[0]->parent = n1;
     }
-    if (n1->right)
+    if (n1->children[1])
     {
-      n1->right->parent = n1;
+      n1->children[1]->parent = n1;
     }
-    n2->left = n1_left;
-    n2->right = n1;
+    n2->children[0] = n1_left;
+    n2->children[1] = n1;
     n2->parent = n1_parent;
     if (n1_left)
     {
@@ -558,13 +558,13 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
     {
       tree->root = n2;
     }
-    else if (n2->parent->left == n1)
+    else if (n2->parent->children[0] == n1)
     {
-      n2->parent->left = n2;
+      n2->parent->children[0] = n2;
     }
-    else if (n2->parent->right == n1)
+    else if (n2->parent->children[1] == n1)
     {
-      n2->parent->right = n2;
+      n2->parent->children[1] = n2;
     }
     else
     {
@@ -584,13 +584,13 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
 #if 1
   if (n1_parent)
   {
-    if (n1_parent->left == n1)
+    if (n1_parent->children[0] == n1)
     {
-      n1_parent->left = n2;
+      n1_parent->children[0] = n2;
     }
-    else if (n1_parent->right == n1)
+    else if (n1_parent->children[1] == n1)
     {
-      n1_parent->right = n2;
+      n1_parent->children[1] = n2;
     }
     else
     {
@@ -600,13 +600,13 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
   }
   if (n2_parent)
   {
-    if (n2_parent->left == n2)
+    if (n2_parent->children[0] == n2)
     {
-      n2_parent->left = n1;
+      n2_parent->children[0] = n1;
     }
-    else if (n2_parent->right == n2)
+    else if (n2_parent->children[1] == n2)
     {
-      n2_parent->right = n1;
+      n2_parent->children[1] = n1;
     }
     else
     {
@@ -616,26 +616,26 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
   }
 #endif
   n2->parent = n1_parent;
-  n2->left = n1_left;
-  n2->right = n1_right;
+  n2->children[0] = n1_left;
+  n2->children[1] = n1_right;
   n1->parent = n2_parent;
-  n1->left = n2_left;
-  n1->right = n2_right;
-  if (n1->left)
+  n1->children[0] = n2_left;
+  n1->children[1] = n2_right;
+  if (n1->children[0])
   {
-    n1->left->parent = n1;
+    n1->children[0]->parent = n1;
   }
-  if (n1->right)
+  if (n1->children[1])
   {
-    n1->right->parent = n1;
+    n1->children[1]->parent = n1;
   }
-  if (n2->left)
+  if (n2->children[0])
   {
-    n2->left->parent = n2;
+    n2->children[0]->parent = n2;
   }
-  if (n2->right)
+  if (n2->children[1])
   {
-    n2->right->parent = n2;
+    n2->children[1]->parent = n2;
   }
   if (n1->parent == NULL)
   {
@@ -656,19 +656,19 @@ static void __attribute__((unused)) abce_rb_tree_exchange(struct abce_rb_tree_no
 static void __attribute__((unused)) abce_rb_tree_replace(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *n1, struct abce_rb_tree_node *n2)
 {
   struct abce_rb_tree_node *n1_parent = n1->parent;
-  struct abce_rb_tree_node *n1_left = n1->left;
-  struct abce_rb_tree_node *n1_right = n1->right;
+  struct abce_rb_tree_node *n1_left = n1->children[0];
+  struct abce_rb_tree_node *n1_right = n1->children[1];
   //printf("replacing %p\n", n1_parent);
   // substitute n2 into n1's place in the tree
   if (n1_parent)
   {
-    if (n1_parent->left == n1)
+    if (n1_parent->children[0] == n1)
     {
-      n1_parent->left = n2;
+      n1_parent->children[0] = n2;
     }
-    else if (n1_parent->right == n1)
+    else if (n1_parent->children[1] == n1)
     {
-      n1_parent->right = n2;
+      n1_parent->children[1] = n2;
     }
     else
     {
@@ -677,20 +677,20 @@ static void __attribute__((unused)) abce_rb_tree_replace(struct abce_rb_tree_noc
     }
   }
   n2->parent = n1_parent;
-  n2->left = n1_left;
-  n2->right = n1_right;
+  n2->children[0] = n1_left;
+  n2->children[1] = n1_right;
   n1->parent = NULL;
-  n1->left = NULL;
-  n1->right = NULL;
+  n1->children[0] = NULL;
+  n1->children[1] = NULL;
   //printf("%p\n", n2->parent);
-  if (n2->left)
+  if (n2->children[0])
   {
-    n2->left->parent = n2;
+    n2->children[0]->parent = n2;
   }
   //printf("%p\n", n2->parent);
-  if (n2->right)
+  if (n2->children[1])
   {
-    n2->right->parent = n2;
+    n2->children[1]->parent = n2;
   }
   //printf("%p\n", n2->parent);
   if (n2->parent == NULL)
@@ -705,7 +705,7 @@ static void abce_rb_tree_delete_one_child(struct abce_rb_tree_nocmp *tree, struc
   /*
    * Precondition: n has at most one non-leaf child.
    */
-  struct abce_rb_tree_node *child = is_leaf(node->right) ? node->left : node->right;
+  struct abce_rb_tree_node *child = is_leaf(node->children[1]) ? node->children[0] : node->children[1];
   //abce_rb_tree_replace(tree, node, child);
   if (node->parent == NULL)
   {
@@ -715,17 +715,17 @@ static void abce_rb_tree_delete_one_child(struct abce_rb_tree_nocmp *tree, struc
       child->parent = NULL;
     }
   }
-  else if (node->parent->left == node)
+  else if (node->parent->children[0] == node)
   {
-    node->parent->left = child;
+    node->parent->children[0] = child;
     if (child != NULL)
     {
       child->parent = node->parent;
     }
   }
-  else if (node->parent->right == node)
+  else if (node->parent->children[1] == node)
   {
-    node->parent->right = child;
+    node->parent->children[1] = child;
     if (child != NULL)
     {
       child->parent = node->parent;
@@ -751,19 +751,19 @@ static void abce_rb_tree_delete_one_child(struct abce_rb_tree_nocmp *tree, struc
 void abce_rb_tree_nocmp_delete(struct abce_rb_tree_nocmp *tree, struct abce_rb_tree_node *node)
 {
 #if 0
-  if (node->left == NULL && node->right == NULL)
+  if (node->children[0] == NULL && node->children[1] == NULL)
   {
     if (node->parent == NULL)
     {
       tree->root = NULL;
     }
-    else if (node->parent->left == node)
+    else if (node->parent->children[0] == node)
     {
-      node->parent->left = NULL;
+      node->parent->children[0] = NULL;
     }
-    else if (node->parent->right == node)
+    else if (node->parent->children[1] == node)
     {
-      node->parent->right = NULL;
+      node->parent->children[1] = NULL;
     }
     else
     {
@@ -772,17 +772,17 @@ void abce_rb_tree_nocmp_delete(struct abce_rb_tree_nocmp *tree, struct abce_rb_t
     return;
   }
 #endif
-  if (!is_leaf(node->left) && !is_leaf(node->right))
+  if (!is_leaf(node->children[0]) && !is_leaf(node->children[1]))
   {
-    struct abce_rb_tree_node *node2 = node->left;
-    //struct abce_rb_tree_node *oldright = node->right;
+    struct abce_rb_tree_node *node2 = node->children[0];
+    //struct abce_rb_tree_node *oldright = node->children[1];
     for (;;)
     {
-      if (node2->right == NULL)
+      if (node2->children[1] == NULL)
       {
         break;
       }
-      node2 = node2->right;
+      node2 = node2->children[1];
     }
     //printf("node->parent %p\n", node->parent);
 #if 0
@@ -791,18 +791,18 @@ void abce_rb_tree_nocmp_delete(struct abce_rb_tree_nocmp *tree, struct abce_rb_t
       tree->root = node2;
       node2->parent = NULL;
     }
-    else if (node->parent->left == node)
+    else if (node->parent->children[0] == node)
     {
-      node->parent->left = node2;
+      node->parent->children[0] = node2;
       node2->parent = node->parent;
     }
-    else if (node->parent->right == node)
+    else if (node->parent->children[1] == node)
     {
-      node->parent->right = node2;
+      node->parent->children[1] = node2;
       node2->parent = node->parent;
     }
-    node2->right = node->right;
-    node2->right->parent = node2;
+    node2->children[1] = node->children[1];
+    node2->children[1]->parent = node2;
 #endif
     //abort();
     abce_rb_tree_exchange(tree, node, node2);
@@ -824,7 +824,7 @@ void abce_rb_tree_nocmp_delete(struct abce_rb_tree_nocmp *tree, struct abce_rb_t
     abce_rb_tree_delete_one_child(tree, node);
     //node2->is_black = node->is_black; // XXX
     //abce_rb_tree_replace(tree, node, node2);
-    //node2->right = oldright;
+    //node2->children[1] = oldright;
     //oldright->parent = node2;
 #if 0
     if (!abce_rb_tree_ptrs_valid(tree))
