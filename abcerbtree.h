@@ -212,33 +212,21 @@ static inline int abce_rb_tree_nocmp_insert_nonexist(
   while (node != NULL)
   {
     int res = cmp(toinsert, node, cmp_ud);
-    if (res < 0)
-    {
-      if (node->children[0] == NULL)
-      {
-        node->children[0] = toinsert;
-        toinsert->parent = node;
-        abce_rb_tree_nocmp_insert_repair(tree, toinsert);
-        break;
-      }
-      node = node->children[0];
-    }
-    else if (res > 0)
-    {
-      if (node->children[1] == NULL)
-      {
-        node->children[1] = toinsert;
-        toinsert->parent = node;
-        abce_rb_tree_nocmp_insert_repair(tree, toinsert);
-        break;
-      }
-      node = node->children[1];
-    }
-    else
+    int child_off;
+    if (res == 0)
     {
       finalres = -EEXIST;
       break;
     }
+    child_off = (res > 0);
+    if (node->children[child_off] == NULL)
+    {
+      node->children[child_off] = toinsert;
+      toinsert->parent = node;
+      abce_rb_tree_nocmp_insert_repair(tree, toinsert);
+      break;
+    }
+    node = node->children[child_off];
   }
   return finalres;
 }
