@@ -35,7 +35,7 @@ int same_in_c(int *x)
   {
     if (x[i])
     {
-      return i;
+      return (int)i;
     }
   }
 #if INCLUDE_ELSE
