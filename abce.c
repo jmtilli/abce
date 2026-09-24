@@ -1746,6 +1746,7 @@ void abce_double_bytecode(struct abce *abce)
     abort();
   }
   memcpy(newblock, abce->bytecode, abce->bytecodesz);
+  abce_free_bcode(abce, abce->bytecode, abce->bytecodecap);
   abce->bytecode = newblock;
   abce->bytecodecap = bytecodenewcap;
 }
@@ -1760,6 +1761,7 @@ void abce_double_stack(struct abce *abce)
     abort();
   }
   memcpy(newblock, abce->stackbase, abce->sp*sizeof(*newblock));
+  abce_free_stack(abce, abce->stackbase, abce->stacklimit);
   abce->stackbase = newblock;
   abce->stacklimit = stacknewlimit;
 }
@@ -2102,6 +2104,7 @@ void abce_double_cache(struct abce *abce)
     abort();
   }
   memcpy(newblock, abce->cachebase, abce->cachesz*sizeof(*newblock));
+  abce_free_stack(abce, abce->cachebase, abce->cachecap);
   abce->cachebase = newblock;
   abce->cachecap = cachenewcap;
 }
