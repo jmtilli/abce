@@ -14,11 +14,11 @@ struct abce_rb_tree_node {
   struct abce_rb_tree_node *parent;
 };
 
-static inline struct abce_rb_tree_node *abce_rb_tree_left(struct abce_rb_tree_node *node)
+static inline struct abce_rb_tree_node *abce_rb_tree_left(const struct abce_rb_tree_node *node)
 {
   return node->children[0];
 }
-static inline struct abce_rb_tree_node *abce_rb_tree_right(struct abce_rb_tree_node *node)
+static inline struct abce_rb_tree_node *abce_rb_tree_right(const struct abce_rb_tree_node *node)
 {
   return node->children[1];
 }
