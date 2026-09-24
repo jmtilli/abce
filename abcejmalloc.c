@@ -22,6 +22,7 @@ struct jmalloc_block {
 
 static size_t abce_arenaremain;
 static char *abce_arena;
+static size_t jmarenabytes;
 
 // 16, 32, 64, 128, 256, 512, 1024, 2048
 static struct jmalloc_block *abce_blocks[8];
@@ -75,6 +76,7 @@ void *abce_jmalloc(size_t sz)
   {
     if (unlikely(sz > 128*1024))
     {
+      jmarenabytes += sz;
       ret = abce_do_mmap_madvise(sz, 1);
       //ret = mmap(NULL, abce_jm_topages(sz), PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
       if (ret == NULL)
@@ -130,6 +132,7 @@ void *abce_jmalloc(size_t sz)
     if (unlikely(abce_arenaremain < sz))
     {
       abce_arenaremain = 1024*1024;
+      jmarenabytes += abce_arenaremain;
       abce_arena = abce_do_mmap_madvise(abce_arenaremain, 1);
       //abce_arena = mmap(NULL, abce_arenaremain, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
       if (unlikely(abce_arena == NULL))
@@ -205,4 +208,9 @@ void abce_jmfree(void *ptr, size_t sz)
   }
   blk->u.next = *ls;
   *ls = blk;
+}
+
+size_t abce_jmgetarenabytes(void)
+{
+  return jmarenabytes;
 }
