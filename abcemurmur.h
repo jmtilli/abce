@@ -78,6 +78,11 @@ static inline uint32_t abce_murmur32(uint32_t seed, uint32_t val)
   return abce_murmurctx_get(&ctx);
 }
 
+static inline uint32_t abce_nonmurmur32(uint32_t x) {
+    // 0x9e3779b97f4a7c15ULL is a 64-bit golden ratio prime number
+    return (uint32_t)(((uint64_t)x * 0x9e3779b97f4a7c15ULL) >> 32);
+}
+
 static inline uint32_t abce_murmur_buf(uint32_t seed, const void *buf, size_t sz)
 {
   struct abce_murmurctx ctx = ABCE_MURMURCTX_INITER(seed);
