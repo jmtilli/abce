@@ -174,7 +174,7 @@ static int abce_caj_internal_put_string(struct abce_caj_out_ctx *ctx, const char
 			}
 			else if (s[i] == '\\')
 			{
-				ret = ctx->datasink(ctx, "\\\"", 2);
+				ret = ctx->datasink(ctx, "\\\\", 2);
 				if (ret)
 				{
 					return ret;
