@@ -1297,18 +1297,35 @@ state1:
 			{
 				case 'b':
 					res = abce_pullcaj_put_key(caj, '\b');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
 					break;
 				case 'f':
 					res = abce_pullcaj_put_key(caj, '\f');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
 					break;
 				case 'n':
 					res = abce_pullcaj_put_key(caj, '\n');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
 					break;
 				case 'r':
 					res = abce_pullcaj_put_key(caj, '\r');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
 					break;
 				case 't':
 					res = abce_pullcaj_put_key(caj, '\t');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
+					break;
+				case '/':
+					res = abce_pullcaj_put_key(caj, '/');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
+					break;
+				case '\\':
+					res = abce_pullcaj_put_key(caj, '\\');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
+					break;
+				case '"':
+					res = abce_pullcaj_put_key(caj, '"');
+					caj->mode = ABCE_CAJ_MODE_KEYSTRING;
 					break;
 				case 'u':
 					caj->mode = ABCE_CAJ_MODE_KEYSTRING_UESCAPE;
@@ -1432,18 +1449,35 @@ state1:
 			{
 				case 'b':
 					res = abce_pullcaj_put_val(caj, '\b');
+					caj->mode = ABCE_CAJ_MODE_STRING;
 					break;
 				case 'f':
 					res = abce_pullcaj_put_val(caj, '\f');
+					caj->mode = ABCE_CAJ_MODE_STRING;
 					break;
 				case 'n':
 					res = abce_pullcaj_put_val(caj, '\n');
+					caj->mode = ABCE_CAJ_MODE_STRING;
 					break;
 				case 'r':
 					res = abce_pullcaj_put_val(caj, '\r');
+					caj->mode = ABCE_CAJ_MODE_STRING;
 					break;
 				case 't':
 					res = abce_pullcaj_put_val(caj, '\t');
+					caj->mode = ABCE_CAJ_MODE_STRING;
+					break;
+				case '/':
+					res = abce_pullcaj_put_val(caj, '/');
+					caj->mode = ABCE_CAJ_MODE_STRING;
+					break;
+				case '\\':
+					res = abce_pullcaj_put_val(caj, '\\');
+					caj->mode = ABCE_CAJ_MODE_STRING;
+					break;
+				case '"':
+					res = abce_pullcaj_put_val(caj, '"');
+					caj->mode = ABCE_CAJ_MODE_STRING;
 					break;
 				case 'u':
 					caj->mode = ABCE_CAJ_MODE_STRING_UESCAPE;
