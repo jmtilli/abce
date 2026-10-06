@@ -74,7 +74,7 @@ void *abce_jmalloc(size_t sz)
   void *ret;
   if (unlikely(sz > 2048))
   {
-    if (unlikely(sz > 128*1024))
+    if (unlikely(sz > 32*1024))
     {
       jmarenabytes += sz;
       ret = abce_do_mmap_madvise(sz, 1);
@@ -131,7 +131,7 @@ void *abce_jmalloc(size_t sz)
   {
     if (unlikely(abce_arenaremain < sz))
     {
-      abce_arenaremain = 1024*1024;
+      abce_arenaremain = 128*1024;
       jmarenabytes += abce_arenaremain;
       abce_arena = abce_do_mmap_madvise(abce_arenaremain, 1);
       //abce_arena = mmap(NULL, abce_arenaremain, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
