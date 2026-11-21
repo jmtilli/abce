@@ -6,44 +6,30 @@
   @locvar $input = @str2pb("")
   @locvar $inputp = 0
   @locvar $ins = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+  $dat{@} = $dp+1
+  $dat{@$dp,@be8} = 0
   @while($ip < $ins[@])
     @if($ins[@$ip] == (">")[@0])
       $dp = $dp + 1
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
     @elseif($ins[@$ip] == ("<")[@0])
       $dp = $dp - 1
     @elseif($ins[@$ip] == ("+")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       $dat{@$dp,@be8} = ($dat{@$dp,@be8} + 1)%256
     @elseif($ins[@$ip] == ("-")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       $dat{@$dp,@be8} = (256 + $dat{@$dp,@be8} - 1)%256
     @elseif($ins[@$ip] == (".")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       @stdout(@strfromchr($dat{@$dp,@be8}))
     @elseif($ins[@$ip] == (",")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       @if($inputp >= $input{@})
         @error("Past end of input")
       @endif
       $dat{@$dp,@be8} = $input{@$inputp,@be8}
       $inputp = $inputp + 1
     @elseif($ins[@$ip] == ("[")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       @if($dat{@$dp,@be8} != 0)
         $ip = $ip + 1
         @continue
@@ -58,10 +44,6 @@
 	@endif
       @endwhile
     @elseif($ins[@$ip] == ("]")[@0])
-      @if($dp >= $dat{@})
-        $dat{@} = $dp+1
-        $dat{@$dp,@be8} = 0
-      @endif
       @if($dat{@$dp,@be8} == 0)
         $ip = $ip + 1
         @continue
