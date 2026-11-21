@@ -62,8 +62,6 @@
 	$ip = $ip - 1
       @endwhile
       $ip = $ip + 1
-    @else
-      @error("Unknown instruction")
     @endif
     $ip = $ip + 1
   @endwhile
