@@ -42,6 +42,7 @@
         @elseif($ins[@$ip] == ("]")[@0])
 	  $matchcnt = $matchcnt - 1
 	@endif
+	$ip = $ip + 1
       @endwhile
     @elseif($ins[@$ip] == ("]")[@0])
       @if($dat{@$dp,@be8} == 0)
