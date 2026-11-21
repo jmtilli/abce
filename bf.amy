@@ -1,0 +1,86 @@
+@function $main($argv,$env)
+  @locvar $dat = @pbnew()
+  @locvar $matchcnt = 0
+  @locvar $dp = 0
+  @locvar $ip = 0
+  @locvar $input = @str2pb("")
+  @locvar $inputp = 0
+  @locvar $ins = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+  @while($ip < $ins[@])
+    @if($ins[@$ip] == (">")[@0])
+      $dp = $dp + 1
+    @elseif($ins[@$ip] == ("<")[@0])
+      $dp = $dp - 1
+    @elseif($ins[@$ip] == ("+")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      $dat{@$dp,@be8} = ($dat{@$dp,@be8} + 1)%256
+    @elseif($ins[@$ip] == ("-")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      $dat{@$dp,@be8} = (256 + $dat{@$dp,@be8} - 1)%256
+    @elseif($ins[@$ip] == (".")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      @stdout(@strfromchr($dat{@$dp,@be8}))
+    @elseif($ins[@$ip] == (",")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      @if($inputp >= $input{@})
+        @error("Past end of input")
+      @endif
+      $dat{@$dp,@be8} = $input{@$inputp,@be8}
+      $inputp = $inputp + 1
+    @elseif($ins[@$ip] == ("[")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      @if($dat{@$dp,@be8} != 0)
+        $ip = $ip + 1
+        @continue
+      @endif
+      $matchcnt = 1
+      $ip = $ip + 1
+      @while($matchcnt > 0)
+        @if($ins[@$ip] == ("[")[@0])
+	  $matchcnt = $matchcnt + 1
+        @elseif($ins[@$ip] == ("]")[@0])
+	  $matchcnt = $matchcnt - 1
+	@endif
+      @endwhile
+    @elseif($ins[@$ip] == ("]")[@0])
+      @if($dp >= $dat{@})
+        $dat{@} = $dp+1
+        $dat{@$dp,@be8} = 0
+      @endif
+      @if($dat{@$dp,@be8} == 0)
+        $ip = $ip + 1
+        @continue
+      @endif
+      $matchcnt = 1
+      $ip = $ip - 1
+      @while($matchcnt > 0)
+        @if($ins[@$ip] == ("]")[@0])
+	  $matchcnt = $matchcnt + 1
+        @elseif($ins[@$ip] == ("[")[@0])
+	  $matchcnt = $matchcnt - 1
+	@endif
+	$ip = $ip - 1
+      @endwhile
+      $ip = $ip + 1
+    @else
+      @error("Unknown instruction")
+    @endif
+    $ip = $ip + 1
+  @endwhile
+  @return 0
+@endfunction

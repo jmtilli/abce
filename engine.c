@@ -3351,6 +3351,7 @@ calltrailer:
           }
           isz = sz;
           GETMBPBPTR(&mbpb, -4);
+          // FIXME sz interpreted incorrectly:
           if (off + sz > mbpb->u.area->u.pb.size)
           {
             abce->err.code = ABCE_E_PB_SET_OOB;
@@ -3440,6 +3441,7 @@ outpbset:
           }
           isz = sz;
           GETMBPBPTR(&mbpb, -3);
+          // FIXME sz interpreted incorrectly:
           if (off + sz > mbpb->u.area->u.pb.size)
           {
             abce->err.code = ABCE_E_PB_GET_OOB;
